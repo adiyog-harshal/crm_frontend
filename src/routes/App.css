@@ -1,0 +1,62 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content-area {
+  padding: 40px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.welcome-card {
+  /* background: linear-gradient(135deg, #05183f, #04143f); */
+  border-radius: 16px;
+  border: 1px solid #0f172a;
+  padding: 32px;
+  color: #0f172a;
+  margin-bottom: 24px;
+}
+
+.welcome-card h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.welcome-card p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.page-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.page-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.page-card p {
+  color: #64748b;
+  font-size: 14px;
+}
+
