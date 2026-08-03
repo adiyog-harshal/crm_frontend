@@ -1,12 +1,12 @@
-.tasks-page{
+.account-page{
     padding : 16px ;
     font-family :Arial, Helvetica, sans-serif;
 }
-.tasks-topbar{
+.account-topbar{
     margin-bottom: 12px;
 }
 
-.tasks-topbar h2{
+.account-topbar h2{
     margin: 0 0 10px 0 ;
 }
 
@@ -31,9 +31,8 @@
     white-space: nowrap;
     background-color: rgba(0, 0, 255, 0.678);
     color: white;
-    
 }
-.tasks-toolbar{
+.account-toolbar{
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #ccc;
@@ -44,7 +43,11 @@
     width: 100%;
     
 }
-
+/* .account-toolbar span{
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray ;
+    margin: 20px;
+} */
  .toolbar-top {
   padding-bottom: 8px;
   border-bottom: 1px solid #ddd;
@@ -87,7 +90,7 @@
     gap: 20px;
     /* margin-top: 20px; */
 }
-.tasks-body{
+.account-body{
     display: flex;
     flex-direction: row;
     gap: 16px ;
@@ -138,12 +141,12 @@ border-radius: 4px;
     table-layout: fixed;
 }
 
-.tasks-table{
+.account-table{
     width : 100%;
     border-collapse: collapse;
     
 }
-.tasks-table th , .tasks-table td{
+.account-table th , .account-table td{
 padding : 10px ;
 text-align: left;
 border: whitesmoke;
@@ -153,11 +156,70 @@ white-space: nowrap;
 text-overflow: ellipsis;
 
 }
-.tasks-table td{
+.account-table td{
     font-weight: 300;
 }
 .empty-row {
   text-align: center;
   color: #888;
   padding: 30px 0;
+}
+
+/* Tablet */
+
+@media(max-width : 770px){
+    .account-page{
+        padding : 12px;
+    }
+    .topbar-row{
+        flex-direction: column;
+        align-items: center;
+        gap : 10px;
+    }
+    .top-search{
+        width : 100%;
+    }
+    .create-btn{
+        width: 100%;
+    }
+    
+    .filter-panel{
+        width : 100%;
+    }
+    .toolbar-icons, .sort-toolbar{
+        flex-wrap: wrap;
+        gap : 10px;
+    }
+    .table-section{
+        overflow-x: auto;
+    }
+    .account-table{
+        width : 600px;
+    }
+}
+
+/* Phone */
+
+@media(max-width : 482px){
+    .account-page{
+        padding : 8px;
+    }
+    .all-records-label{
+        font-size: 15px ;
+        padding: 6px;
+    }
+    .account-body{                   
+        flex-direction: column;       
+    }
+    
+    .toolbar-icons button{
+        padding : 6px 10px;
+    }
+    .table-section{
+        overflow-x: auto;
+    }
+    .account-table th, .account-table td{
+        padding : 8px;
+        font-size: 13px;
+    }
 }

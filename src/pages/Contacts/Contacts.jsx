@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import './Contacts.css'
 import { Users, UserPlus, Trash2, Plus, Search, X, Mail, Phone, Building2, Download } from "lucide-react";
-import Button from '../components/ui/Button';
-import SearchInput from '../components/ui/SearchInput';
+import Button from '../../components/ui/Button'
+import SearchInput from '../../components/ui/SearchInput';
 
 const Contacts = () => {
   const [contacts, setContacts] = useState([

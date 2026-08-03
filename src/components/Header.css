@@ -339,3 +339,52 @@
 .logout-btn:active {
   transform: scale(0.98);
 }
+
+/* Tablet  */
+@media (max-width : 770px){
+  .header{
+    padding : 0 16px;
+  }
+  .header-center{
+    margin : 0 16px;
+    max-width :240px;
+  }
+  .profile-info{
+    display: none;
+  }
+  .page-title{
+    font-size: 14px;
+  }
+  .breadcrumb-parent, .breadcrumb-separator{
+    font-size: 13px;
+  }
+  .profile-dropdown{
+    width : 240px;
+  }
+}
+
+/* Phone */
+@media(max-width:482px){
+  .header{
+    height:16px;
+    padding : 0 16px;
+  }
+  .header-left .breadcrumb-parent, .header-left .breadcrumb-separator{
+    display: none;
+  }
+  .header-center{
+    display: none;
+  }
+  .icon-btn{
+    width : 34px;
+    height :34px;
+  }
+  .profile-avatar{
+    width : 32px ;
+    height : 32px;
+  }
+  .profile-dropdown{
+    width: 220px;
+    right: -10px;
+  }
+}

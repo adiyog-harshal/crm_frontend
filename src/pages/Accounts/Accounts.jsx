@@ -114,20 +114,6 @@ const Accounts = () => {
         </table>
       </div>
 
-
-
-
-
-      
-
-      
-
-
-
-
-
-
-
      </div>
 
     </div>

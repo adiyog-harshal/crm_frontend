@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Deals.css';
 import { IndianRupee, TrendingUp, Plus, Search, X, Mail, Phone, Building2, Calendar, FileText, Check, Download, Edit3, Trash2, MoreVertical, Briefcase, FileDown, CheckCircle, Clock, Printer, Eye, User } from "lucide-react";
-import Button from '../components/ui/Button';
-import SearchInput from '../components/ui/SearchInput';
+import Button from '../../components/ui/Button';
+import SearchInput from '../../components/ui/SearchInput';
 
 const STAGES = ["New", "Contacted", "Qualified", "Unqualified", "Negotiation", "Won"];
 

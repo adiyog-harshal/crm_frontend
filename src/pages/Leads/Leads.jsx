@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import './Leads.css'
 import { Users, UserPlus, Briefcase, IndianRupee, Trash2, Plus, Search, X, Mail, Phone, Download } from "lucide-react";
-import Button from '../components/ui/Button';
-import SearchInput from '../components/ui/SearchInput';
+import Button from '../../components/ui/Button';
+import SearchInput from '../../components/ui/SearchInput';
 
 const Leads = () => {
   const [leads, setLeads] = useState([

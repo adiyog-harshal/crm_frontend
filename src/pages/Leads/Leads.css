@@ -478,11 +478,20 @@
     .leads-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+     .leads-card{
+        display : block;
+        overflow-x: auto;
+    }
+    
 }
 
 @media (max-width: 550px) {
     .leads-stats-grid {
         grid-template-columns: 1fr;
+    }
+    .leads-card{
+        display : block;
+        overflow-x: auto;
     }
     .leads-card-header {
         flex-direction: column;
@@ -502,6 +511,11 @@
     .leads-add-btn {
         justify-content: center;
     }
+    .leads-table th,
+    .leads-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
 }
 
 /* Animations */
@@ -514,3 +528,4 @@
     from { transform: translateY(15px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+

@@ -331,9 +331,9 @@
     font-weight: 600;
     color: #64748b;
 }
-
+/* 1024px */
 /* Responsive queries */
-@media (max-width: 1024px) {
+@media (max-width: 700x) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -356,3 +356,6 @@
         justify-content: space-between;
     }
 }
+
+/* Tablet */
+
