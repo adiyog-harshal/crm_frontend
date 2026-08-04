@@ -219,8 +219,8 @@ text-overflow: ellipsis;
         overflow-x: auto;
     }
     .meeting-table th, .meeting-table td{
-        padding : 8px;
-        font-size: 10px;
+        padding : 18px;
+        font-size: 15px;
         
        
     }

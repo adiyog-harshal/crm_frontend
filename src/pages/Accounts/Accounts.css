@@ -219,7 +219,7 @@ text-overflow: ellipsis;
         overflow-x: auto;
     }
     .account-table th, .account-table td{
-        padding : 8px;
-        font-size: 13px;
+        padding : 18px;
+        font-size: 15px;
     }
 }
