@@ -4,6 +4,8 @@ import { IndianRupee, TrendingUp, Plus, Search, X, Mail, Phone, Building2, Calen
 import Button from '../../components/ui/Button';
 import SearchInput from '../../components/ui/SearchInput';
 
+
+
 const STAGES = ["New", "Contacted", "Qualified", "Unqualified", "Negotiation", "Won"];
 
 const STAGE_PROBABILITIES = {
@@ -34,8 +36,21 @@ const INITIAL_DEALS = [
   { id: 7, title: "Swiggy Ads Integration", company: "Swiggy", contact: "Divya Patel", phone: "+91 90001 20002", email: "divya.patel@swiggy.com", value: 35000, stage: "Negotiation", probability: 80, date: "2026-07-15" }
 ];
 
+const normalizeDeal = (d) => ({
+  id: d.id,
+  title: d.deal_name || d.title || d.deal_title || d.name || "Untitled Deal",
+  company: d.company || d.company_name || d.client || (d.lead ? `Lead #${d.lead}` : ""),
+  contact: d.contact || d.contact_name || d.contact_person || "",
+  phone: d.phone || d.contact_phone || d.mobile || "",
+  email: d.email || d.contact_email || "",
+  value: Number(d.amount || d.value || d.deal_value || 0),
+  stage: d.stage || d.deal_stage || d.status || "New",
+  probability: d.probability || STAGE_PROBABILITIES[d.stage || d.deal_stage || d.status] || 20,
+  date: d.expected_close_date || d.date || d.created_at || d.date_created || new Date().toISOString().split('T')[0],
+});
+
 const Deals = () => {
-  const [deals, setDeals] = useState(INITIAL_DEALS);
+  const [deals, setDeals] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDragStage, setActiveDragStage] = useState(null);
   
@@ -64,6 +79,18 @@ const Deals = () => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [activeDropdownId]);
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/deal/')
+    .then(res => res.json())
+    .then (data => {
+      const normalized = Array.isArray(data)? data.map(normalizeDeal) : [];
+      setDeals(normalized)
+    })
+    .catch(err => {
+      console.error("Error fetching deals:",err)
+    })
+    }, [])
 
   // Statistics
   const totalDealsCount = deals.length;
@@ -111,13 +138,20 @@ const Deals = () => {
           : deal
       )
     );
+      // Save change to backend
+    fetch(`http://127.0.0.1:8000/api/deal/update/${dealId}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: targetStage })
+    }).catch(err => console.error('Error updating deal stage:', err));
   };
-
   // Add/Edit Handlers
   const openAddModal = () => {
     setDealForm({ title: "", company: "", contact: "", phone: "", email: "", value: "", stage: "New", probability: 20 });
     setActiveModal("add");
   };
+
+
 
   const openEditModal = (deal) => {
     setSelectedDeal(deal);
@@ -135,7 +169,11 @@ const Deals = () => {
     setActiveDropdownId(null);
   };
 
-  const handleDealFormSubmit = (e) => {
+
+
+
+
+const handleDealFormSubmit = (e) => {
     e.preventDefault();
     if (!dealForm.title || !dealForm.company || !dealForm.value) return;
 
@@ -143,19 +181,26 @@ const Deals = () => {
     if (isNaN(val)) return;
 
     if (activeModal === "add") {
-      const newDeal = {
-        id: Date.now(),
-        title: dealForm.title,
-        company: dealForm.company,
-        contact: dealForm.contact || "Unknown",
-        phone: dealForm.phone || "",
-        email: dealForm.email || "",
-        value: val,
+      const payload = {
+        deal_name: dealForm.title,
+        amount: val,
         stage: dealForm.stage,
-        probability: dealForm.probability,
-        date: new Date().toISOString().split('T')[0]
+        expected_close_date: new Date().toISOString().split('T')[0],
+        lead: 1
       };
-      setDeals(prev => [newDeal, ...prev]);
+
+      fetch('http://127.0.0.1:8000/api/deal/add/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(res => res.json())
+        .then(data => {
+          const newDeal = normalizeDeal(data);
+          setDeals(prev => [newDeal, ...prev]);
+        })
+        .catch(err => console.error('Error creating deal:', err));
+
     } else if (activeModal === "edit" && selectedDeal) {
       setDeals(prev =>
         prev.map(d =>
@@ -169,12 +214,24 @@ const Deals = () => {
     setSelectedDeal(null);
   };
 
+
+
+
+
   const handleDeleteDeal = (dealId) => {
     if (window.confirm("Are you sure you want to delete this deal?")) {
-      setDeals(prev => prev.filter(d => d.id !== dealId));
+      fetch(`http://127.0.0.1:8000/api/deal/delete/${dealId}/`, {
+        method: 'DELETE',
+      })
+        .then(() => {
+          setDeals(prev => prev.filter(d => d.id !== dealId));
+        })
+        .catch(err => console.error('Error deleting deal:', err));
     }
     setActiveDropdownId(null);
   };
+
+
 
   // Quick Action Modals
   const openActionModal = (deal, action) => {
@@ -266,10 +323,11 @@ const Deals = () => {
 
   // Filter deals by search
   const filteredDeals = deals.filter(deal =>
-    deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    deal.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    deal.contact.toLowerCase().includes(searchQuery.toLowerCase())
+    (deal.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (deal.company || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (deal.contact || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
+
 
   return (
     <div className="deals-page-container">
@@ -462,6 +520,8 @@ const Deals = () => {
 
       {/* ================= MODALS OVERLAYS ================= */}
 
+
+
       {/* Add / Edit Deal Modal */}
       {(activeModal === 'add' || activeModal === 'edit') && (
         <div className="modal-overlay">
@@ -563,6 +623,8 @@ const Deals = () => {
                   onChange={(e) => setDealForm({ ...dealForm, probability: Number(e.target.value) })}
                 />
               </div>
+
+
 
               <div className="modal-footer">
                 <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Cancel</button>
@@ -692,6 +754,8 @@ const Deals = () => {
         </div>
       )}
 
+
+
       {/* Send Proposal Modal */}
       {activeModal === 'proposal' && selectedDeal && (
         <div className="modal-overlay">
@@ -770,6 +834,7 @@ const Deals = () => {
         </div>
       )}
 
+
       {/* View Deal Details Modal */}
       {activeModal === 'view' && selectedDeal && (
         <div className="modal-overlay">
@@ -840,6 +905,7 @@ const Deals = () => {
               </div>
             </div>
 
+
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setActiveModal(null)}>Close</button>
               <button className="btn-save" onClick={() => { setActiveModal(null); openEditModal(selectedDeal); }}>
@@ -852,6 +918,6 @@ const Deals = () => {
       )}
     </div>
   );
-};
+}
 
 export default Deals;
