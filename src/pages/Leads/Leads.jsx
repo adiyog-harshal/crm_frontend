@@ -1,83 +1,348 @@
-import React, { useState } from 'react'
-import './Leads.css'
-import { Users, UserPlus, Briefcase, IndianRupee, Trash2, Plus, Search, X, Mail, Phone, Download } from "lucide-react";
-import Button from '../../components/ui/Button';
-import SearchInput from '../../components/ui/SearchInput';
+import React, { useState, useEffect } from "react";
+import "./Leads.css";
+import api from "../../services/api";
+import {
+  Users,
+  UserPlus,
+  Briefcase,
+  IndianRupee,
+  Trash2,
+  Plus,
+  Search,
+  X,
+  Mail,
+  Phone,
+  Download,
+} from "lucide-react";
+
+import Button from "../../components/ui/Button";
+import SearchInput from "../../components/ui/SearchInput";
 
 const Leads = () => {
-  const [leads, setLeads] = useState([
-    { id: 1, name: "Rahul Sharma", company: "Infosys", email: "rahul.sharma@infosys.com", phone: "+91 98765 43210", status: "New" },
-    { id: 2, name: "Priya Singh", company: "TCS", email: "priya.singh@tcs.com", phone: "+91 87654 32109", status: "Qualified" },
-    { id: 3, name: "Amit Patel", company: "HCL", email: "amit.patel@hcl.com", phone: "+91 76543 21098", status: "Contacted" }
-  ]);
-
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newLead, setNewLead] = useState({ name: "", company: "", email: "", phone: "", status: "New" });
-
-  // Dynamic calculations based on state
-  const computedStats = [
-    {
-      title: "Total Leads",
-      value: leads.length.toString(),
-      icon: <UserPlus size={24} />,
-      color: "#1e293b",
-    },
-    {
-      title: "Customers",
-      value: leads.filter(l => l.status === "Qualified").length.toString(),
-      icon: <Users size={24} />,
-      color: "#1e293b",
-    },
-    {
-      title: "Active Deals",
-      value: leads.filter(l => l.status === "Contacted").length.toString(),
-      icon: <Briefcase size={24} />,
-      color: "#1e293b",
-    },
-    {
-      title: "Revenue (Est.)",
-      value: `₹${(leads.filter(l => l.status === "Qualified").length * 1.5).toFixed(1)}L`,
-      icon: <IndianRupee size={24} />,
-      color: "#1e293b",
-    }
-  ];
-
-  // Lead Handlers
-  const handleUpdateLeadStatus = (id, newStatus) => {
-    setLeads(prev => prev.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
-  };
-
-  const handleDeleteLead = (id) => {
-    setLeads(prev => prev.filter(lead => lead.id !== id));
-  };
-
-  const handleAddLead = (e) => {
-    e.preventDefault();
-    if (!newLead.name.trim() || !newLead.company.trim()) return;
-    setLeads(prev => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: newLead.name.trim(),
-        company: newLead.company.trim(),
-        email: newLead.email.trim() || `${newLead.name.toLowerCase().replace(/\s+/g, '.')}@${newLead.company.toLowerCase().replace(/\s+/g, '')}.com`,
-        phone: newLead.phone.trim() || "+91 99999 88888",
-        status: newLead.status
-      }
-    ]);
-    setNewLead({ name: "", company: "", email: "", phone: "", status: "New" });
-    setIsModalOpen(false);
-  };
-
-  const filteredLeads = leads.filter(lead => {
-    const matchesSearch = lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lead.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lead.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "All" || lead.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [customLocation, setCustomLocation] = useState({
+    country: "",
+    state: "",
+    city: "",
   });
+  const [newLead, setNewLead] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    company: "",
+    source: "",
+    status: true,
+    country: "",
+    state: "",
+    city: "",
+  });
+
+  useEffect(() => {
+    fetchLeads();
+    fetchCountries();
+    fetchStates();
+    fetchCities();
+  }, []);
+  const fetchLeads = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("leads/");
+      setLeads(response.data);
+    } catch (error) {
+      console.error(error);
+      alert("Unable to fetch leads.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchCountries = async () => {
+    try {
+      const response = await api.get("masters/countries/");
+      setCountries(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchStates = async () => {
+    try {
+      const response = await api.get("masters/states/");
+      setStates(response.data);
+    } catch (error) {
+      console.error("Unable to fetch states:", error);
+    }
+  };
+  const fetchCities = async () => {
+    try {
+      const response = await api.get("masters/city/");
+      setCities(response.data);
+    } catch (error) {
+      console.error("Unable to fetch cities:", error);
+    }
+  };
+  const handleChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    setNewLead({
+      ...newLead,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+  const resetForm = () => {
+    setNewLead({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      company: "",
+      source: "",
+      status: true,
+      country: "",
+      state: "",
+      city: "",
+    });
+    setCustomLocation({ country: "", state: "", city: "" });
+    setEditingId(null);
+    setIsEditing(false);
+  };
+
+  const createCode = (value) => value.trim().replace(/\s+/g, "").slice(0, 10).toUpperCase();
+
+  const resolveLocationIds = async () => {
+    const countryName = customLocation.country.trim();
+    const stateName = customLocation.state.trim();
+    const cityName = customLocation.city.trim();
+
+    // -------------------------
+    // FIND COUNTRY
+    // -------------------------
+    let country = countries.find(
+      (item) =>
+        item.country_name?.trim().toLowerCase() ===
+        countryName.toLowerCase()
+    );
+
+    if (!country) {
+      throw new Error(`Country "${countryName}" not found.`);
+    }
+
+    // -------------------------
+    // FIND OR CREATE STATE
+    // -------------------------
+    let state = states.find(
+      (item) =>
+        Number(item.country) === Number(country.id) &&
+        item.state_name?.trim().toLowerCase() ===
+          stateName.toLowerCase()
+    );
+
+    if (!state) {
+      const stateResponse = await api.post("masters/states/", {
+        country: country.id,
+        state_name: stateName,
+        state_code: createCode(stateName),
+        status: true,
+      });
+
+      state = stateResponse.data.data;
+
+      // Keep frontend state list updated
+      setStates((prev) => [...prev, state]);
+    }
+
+    // -------------------------
+    // FIND OR CREATE CITY
+    // -------------------------
+    let city = cities.find(
+      (item) =>
+        Number(item.state) === Number(state.id) &&
+        item.city_name?.trim().toLowerCase() ===
+          cityName.toLowerCase()
+    );
+
+    if (!city) {
+      const cityResponse = await api.post("masters/city/add/", {
+        state: state.id,
+        city_name: cityName,
+        city_code: createCode(cityName),
+        status: true,
+      });
+
+      city = cityResponse.data.data;
+
+      // Keep frontend city list updated
+      setCities((prev) => [...prev, city]);
+    }
+
+    return {
+      country: country.id,
+      state: state.id,
+      city: city.id,
+    };
+  };
+
+  const handleAddLead = async (e) => {
+    e.preventDefault();
+    try {
+      const locationIds = await resolveLocationIds();
+      const payload = {
+        ...newLead,
+        ...locationIds,
+        status: newLead.status === true || newLead.status === "true",
+      };
+      if (isEditing) {
+        await api.put(
+          `leads/update/${editingId}/`,
+          payload
+        );
+        alert("Lead Updated Successfully");
+      } else {
+        await api.post(
+          "leads/add/",
+          payload
+
+        );
+        alert("Lead Added Successfully");
+      }
+      fetchLeads();
+      resetForm();
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      console.log(error.response?.data);
+      alert("Unable to save lead.");
+    }
+  };
+
+  const handleDeleteLead = async (id) => {
+
+    const confirmDelete = window.confirm(
+      "Delete this Lead?"
+    );
+    if (!confirmDelete) return;
+    try {
+      await api.delete(
+        `leads/delete/${id}/`
+      );
+      alert("Lead Deleted Successfully");
+      fetchLeads();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to delete lead.");
+    }
+  };
+
+  const handleEditLead = (lead) => {
+    setNewLead({
+      first_name: lead.first_name,
+      last_name: lead.last_name,
+      email: lead.email,
+      phone: lead.phone,
+      company: lead.company,
+      source: lead.source,
+      status: lead.status,
+      country: lead.country,
+      state: lead.state,
+      city: lead.city,
+
+    });
+    setCustomLocation({
+      country: countries.find((item) => Number(item.id) === Number(lead.country))?.country_name || "",
+      state: states.find((item) => Number(item.id) === Number(lead.state))?.state_name || "",
+      city: cities.find((item) => Number(item.id) === Number(lead.city))?.city_name || "",
+    });
+    setEditingId(lead.id);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdateLeadStatus = async (
+    id,
+    status
+  ) => {
+
+    const lead = leads.find(
+      (item) => item.id === id
+    );
+    if (!lead) return;
+    try {
+      await api.put(
+        `leads/update/${id}/`,
+        {
+          ...lead,
+          status,
+        }
+      );
+      fetchLeads();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const filteredLeads = leads.filter((lead) => {
+    const fullName =
+      `${lead.first_name} ${lead.last_name}`;
+
+    const matchesSearch =
+      fullName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      lead.company
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      lead.email
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      String(lead.status) ===
+        String(statusFilter);
+    return (
+      matchesSearch && matchesStatus
+    );
+  });
+
+
+const computedStats = [
+
+  {
+    title: "Total Leads",
+    value: leads.length,
+    icon: <UserPlus size={24} />,
+    color: "#1e293b",
+  },
+
+  {
+    title: "Active Leads",
+    value: leads.filter(l => l.status).length,
+    icon: <Users size={24} />,
+    color: "#16a34a",
+  },
+
+  {
+    title: "Inactive Leads",
+    value: leads.filter(l => !l.status).length,
+    icon: <Briefcase size={24} />,
+    color: "#dc2626",
+  },
+
+  {
+    title: "Companies",
+    value: new Set(leads.map(l => l.company)).size,
+    icon: <IndianRupee size={24} />,
+    color: "#2563eb",
+  },
+
+];
 
   return (
     <>
@@ -105,7 +370,10 @@ const Leads = () => {
             <Button
               variant="primary"
               icon={<Plus size={16} />}
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                  resetForm();
+                  setIsModalOpen(true);
+              }}
               className="leads-add-btn"
             >
               Add Lead
@@ -164,7 +432,9 @@ const Leads = () => {
               {filteredLeads.length > 0 ? (
                 filteredLeads.map(lead => (
                   <tr key={lead.id}>
-                    <td className="lead-name-cell">{lead.name}</td>
+                    <td className="lead-name-cell">
+                      {lead.first_name} {lead.last_name}
+                    </td>
                     <td>{lead.company}</td>
                     <td>
                       <span className="info-badge">
@@ -179,21 +449,31 @@ const Leads = () => {
                       </span>
                     </td>
                     <td>
-                      <select
-                        className={`leads-status-select ${lead.status.toLowerCase()}`}
-                        value={lead.status}
-                        onChange={e => handleUpdateLeadStatus(lead.id, e.target.value)}
-                      >
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Qualified">Qualified</option>
-                        <option value="Lost">Lost</option>
-                      </select>
+                    {lead.status ? (
+                      <span className="status-active">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="status-inactive">
+                        Inactive
+                      </span>
+                    )}
                     </td>
                     <td>
-                      <button className="leads-delete-btn" onClick={() => handleDeleteLead(lead.id)} title="Delete Lead">
-                        <Trash2 size={16} />
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleEditLead(lead)}
+                      >
+                        Edit
                       </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteLead(lead.id)}
+                      >
+                        Delete
+                      </button>
+
                     </td>
                   </tr>
                 ))
@@ -212,19 +492,31 @@ const Leads = () => {
         <div className="leads-modal-overlay">
           <div className="leads-modal-card">
             <div className="leads-modal-header">
-              <h3>Add New Lead</h3>
+              <h3>
+                {isEditing ? "Edit Lead" : "Add New Lead"}
+              </h3>
               <button className="leads-close-btn" onClick={() => setIsModalOpen(false)}>
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleAddLead} className="leads-modal-form">
               <div className="leads-input-group">
-                <label>Lead Name *</label>
+                <label>First Name *</label>
                 <input
                   type="text"
-                  placeholder="Enter full name"
-                  value={newLead.name}
-                  onChange={e => setNewLead(prev => ({ ...prev, name: e.target.value }))}
+                  name="first_name"
+                  value={newLead.first_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="leads-input-group">
+                <label>Last Name *</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={newLead.last_name}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -232,46 +524,110 @@ const Leads = () => {
                 <label>Company *</label>
                 <input
                   type="text"
-                  placeholder="Enter company name"
+                  name="company"
                   value={newLead.company}
-                  onChange={e => setNewLead(prev => ({ ...prev, company: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="leads-input-group">
-                <label>Email Address</label>
+                <label>Email *</label>
                 <input
                   type="email"
-                  placeholder="name@company.com"
+                  name="email"
                   value={newLead.email}
-                  onChange={e => setNewLead(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={handleChange}
+                  required
                 />
               </div>
               <div className="leads-input-group">
-                <label>Phone Number</label>
+                <label>Phone *</label>
                 <input
                   type="text"
-                  placeholder="+91 XXXXX XXXXX"
+                  name="phone"
                   value={newLead.phone}
-                  onChange={e => setNewLead(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={handleChange}
+                  required
                 />
               </div>
               <div className="leads-input-group">
+                <label>Lead Source</label>
+                <input
+                  type="text"
+                  name="source"
+                  value={newLead.source}
+                  onChange={handleChange}
+                  placeholder="Website, Referral, LinkedIn..."
+                />
+              </div>
+              <div className="leads-input-group">
+                <label>Country</label>
+                <input
+                  type="text"
+                  value={customLocation.country}
+                  onChange={(event) => setCustomLocation({ ...customLocation, country: event.target.value })}
+                  placeholder="Type country"
+                  required
+                />
+              </div>
+
+              <div className="leads-input-group">
+                <label>State</label>
+                <input
+                  type="text"
+                  value={customLocation.state}
+                  onChange={(event) => setCustomLocation({ ...customLocation, state: event.target.value })}
+                  placeholder="Type state"
+                  required
+                />
+              </div>
+
+              <div className="leads-input-group">
+                <label>City</label>
+                <input
+                  type="text"
+                  value={customLocation.city}
+                  onChange={(event) => setCustomLocation({ ...customLocation, city: event.target.value })}
+                  placeholder="Type city"
+                  required
+                />
+              </div>
+
+              <div className="leads-input-group">
                 <label>Status</label>
+
                 <select
+                  name="status"
                   value={newLead.status}
-                  onChange={e => setNewLead(prev => ({ ...prev, status: e.target.value }))}
+                  onChange={handleChange}
                 >
-                  <option value="New">New</option>
-                  <option value="Contacted">Contacted</option>
-                  <option value="Qualified">Qualified</option>
-                  <option value="Lost">Lost</option>
+                  <option value={true}>Active</option>
+                  <option value={false}>Inactive</option>
                 </select>
               </div>
+
               <div className="leads-modal-actions">
-                <button type="button" className="leads-btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="leads-btn-submit">Add Lead</button>
+
+                <button
+                  type="button"
+                  className="leads-btn-cancel"
+                  onClick={() => {
+                    resetForm();
+                    setIsModalOpen(false);
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="leads-btn-submit"
+                >
+                  {isEditing ? "Update Lead" : "Add Lead"}
+                </button>
+
               </div>
+
             </form>
           </div>
         </div>

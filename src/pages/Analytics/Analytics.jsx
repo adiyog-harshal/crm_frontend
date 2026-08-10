@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./Analytics.css";
+import api from "../../services/api";
+
 import {
   ResponsiveContainer,
   LineChart,
@@ -15,228 +17,294 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-const dealStatus = [
-  { name: "Open", value: 18 },
-  { name: "Negotiation", value: 10 },
-  { name: "Won", value: 15 },
-  { name: "Lost", value: 7 },
-];
+
 const COLORS = [
   "#4F46E5",
   "#22C55E",
   "#F59E0B",
-  "#EF4444"
-];
-const monthlyLeads = [
-  { month: "Jan", leads: 18 },
-  { month: "Feb", leads: 24 },
-  { month: "Mar", leads: 20 },
-  { month: "Apr", leads: 32 },
-  { month: "May", leads: 28 },
-  { month: "Jun", leads: 36 },
-  { month: "Jul", leads: 42 },
-];
-
-const taskStatus = [
-  { name: "Completed", tasks: 24 },
-  { name: "Pending", tasks: 8 },
+  "#EF4444",
 ];
 
 const Analytics = () => {
-  return (
-    <div className="analytics-page">
+  const [dashboard, setDashboard] = useState(null);
 
+  useEffect(() => {
+    api
+      .get("analytics/dashboard/")
+      .then((response) => {
+        setDashboard(response.data);
+      })
+      .catch((error) => {
+        console.error("Unable to load analytics:", error);
+      });
+  }, []);
+
+  const liveMonthlyLeads = (dashboard?.monthly_leads || []).map((item) => ({
+    month: new Date(item.month).toLocaleString("en", {
+      month: "short",
+    }),
+    leads: item.leads,
+  }));
+
+  const liveDealStatus = (dashboard?.deal_status || []).map((item) => ({
+    name: item.stage,
+    value: item.value,
+  }));
+
+  const liveTaskStatus = [
+    {
+      name: "Completed",
+      tasks: dashboard?.completed_tasks || 0,
+    },
+    {
+      name: "Pending",
+      tasks: dashboard?.pending_tasks || 0,
+    },
+  ];
+
+  const upcomingMeetings = dashboard?.upcoming_meetings || [];
+
+  return (
+    <div>
+
+      {/* Header */}
       <div className="analytics-header">
         <h2>Analytics</h2>
         <p>CRM Overview & Performance</p>
       </div>
 
       {/* Summary Cards */}
-
       <div className="summary-cards">
 
         <div className="card">
           <h4>Total Leads</h4>
-          <h2>245</h2>
-          <span>+12 this week</span>
+          <h2>{dashboard?.total_leads ?? "—"}</h2>
+          <span>
+            {dashboard
+              ? `${dashboard.total_leads} Total`
+              : "Loading..."}
+          </span>
         </div>
 
         <div className="card">
           <h4>Total Contacts</h4>
-          <h2>180</h2>
-          <span>+6 this week</span>
+          <h2>{dashboard?.total_contacts ?? "—"}</h2>
+          <span>
+            {dashboard
+              ? `${dashboard.total_contacts} Total`
+              : "Loading..."}
+          </span>
         </div>
 
         <div className="card">
           <h4>Total Deals</h4>
-          <h2>52</h2>
-          <span>8 Active</span>
-        </div>
-
-        <div className="card">
-          <h4>Total Accounts</h4>
-          <h2>35</h2>
-          <span>3 New</span>
+          <h2>{dashboard?.total_deals ?? "—"}</h2>
+          <span>
+            {dashboard
+              ? `${dashboard.total_deals} Total`
+              : "Loading..."}
+          </span>
         </div>
 
       </div>
 
       {/* Charts */}
-
       <div className="chart-section">
 
         {/* Monthly Leads */}
-
         <div className="chart-card">
 
           <h3>Monthly Leads</h3>
 
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyLeads}>
+            <LineChart data={liveMonthlyLeads}>
+
               <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis dataKey="month" />
+
               <YAxis />
+
               <Tooltip />
+
               <Line
                 type="monotone"
                 dataKey="leads"
                 stroke="#4F46E5"
                 strokeWidth={3}
               />
+
             </LineChart>
           </ResponsiveContainer>
 
         </div>
 
         {/* Task Status */}
-
         <div className="chart-card">
 
           <h3>Task Status</h3>
 
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={taskStatus}>
+            <BarChart data={liveTaskStatus}>
+
               <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis dataKey="name" />
+
               <YAxis />
+
               <Tooltip />
-              <Bar dataKey="tasks" fill="#10B981"  />
+
+              <Bar
+                dataKey="tasks"
+                fill="#10B981"
+              />
+
             </BarChart>
           </ResponsiveContainer>
 
         </div>
 
-        {/* Lead card */}
-<div className="chart-card">
-  <h3>Deal Status</h3>
+        {/* Deal Status */}
+        <div className="chart-card">
 
-  <ResponsiveContainer width="100%" height={300}>
-    <PieChart>
-      <Pie
-        data={dealStatus}
-        dataKey="value"
-        nameKey="name"
-        cx="50%"
-        cy="50%"
-        outerRadius={90}
-        label
-      >
-        {dealStatus.map((entry, index) => (
-          <Cell
-            key={`cell-${index}`}
-            fill={COLORS[index % COLORS.length]}
-          />
-        ))}
-      </Pie>
+          <h3>Deal Status</h3>
 
-      <Tooltip />
-      <Legend />
-    </PieChart>
-  </ResponsiveContainer>
-</div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
 
+              <Pie
+                data={liveDealStatus}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label
+              >
+                {liveDealStatus.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
 
-        {/* Bottom Section */}
+              <Tooltip />
 
+              <Legend />
+
+            </PieChart>
+          </ResponsiveContainer>
+
+        </div>
+
+      </div>
+
+      {/* Bottom Section */}
       <div className="bottom-section">
 
-        {/* Lead Conversion */}
-
+        {/* Task Summary */}
         <div className="card progress-card">
 
-          <h3>Lead By Stage</h3>
+          <h3>Task Summary</h3>
 
           <div className="progress-item">
-            <p>Qualified Leads</p>
-            <progress value="75" max="100"></progress>
-            <span>75%</span>
+            <p>Completed Tasks</p>
+
+            <progress
+              value={dashboard?.completed_tasks || 0}
+              max={dashboard?.total_tasks || 1}
+            />
+
+            <span>
+              {dashboard?.completed_tasks || 0}
+            </span>
           </div>
 
           <div className="progress-item">
-            <p>Deals Closed</p>
-            <progress value="60" max="100"></progress>
-            <span>60%</span>
+            <p>Pending Tasks</p>
+
+            <progress
+              value={dashboard?.pending_tasks || 0}
+              max={dashboard?.total_tasks || 1}
+            />
+
+            <span>
+              {dashboard?.pending_tasks || 0}
+            </span>
           </div>
 
           <div className="progress-item">
-            <p>Meeting Scheduled</p>
-            <progress value="82" max="100"></progress>
-            <span>82%</span>
+            <p>Total Tasks</p>
+
+            <span>
+              {dashboard?.total_tasks ?? "—"}
+            </span>
           </div>
 
         </div>
 
         {/* Upcoming Meetings */}
-
         <div className="card meeting-card">
 
           <h3>Upcoming Meetings</h3>
 
-          <div className="meeting-item">
-            <h4>ABC Technologies</h4>
-            <p>Today • 10:00 AM</p>
-          </div>
+          {upcomingMeetings.length > 0 ? (
+            upcomingMeetings.map((meeting, index) => (
+              <div
+                className="meeting-item"
+                key={index}
+              >
+                <h4>{meeting.title}</h4>
 
-          <div className="meeting-item">
-            <h4>XYZ Pvt Ltd</h4>
-            <p>Today • 3:30 PM</p>
-          </div>
-
-          <div className="meeting-item">
-            <h4>PQR Solutions</h4>
-            <p>Tomorrow • 11:00 AM</p>
-          </div>
+                <p>
+                  {meeting.meeting_date} •{" "}
+                  {meeting.start_time}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No upcoming meetings.</p>
+          )}
 
         </div>
 
       </div>
 
       {/* Recent Activities */}
-
       <div className="card recent-card">
 
         <h3>Recent Activities</h3>
 
         <ul>
 
-          <li> New Lead added - Rahul Sharma</li>
+          <li>
+            Total Leads: {dashboard?.total_leads ?? 0}
+          </li>
 
-          <li> Contact updated - Priya Patel</li>
+          <li>
+            Total Deals: {dashboard?.total_deals ?? 0}
+          </li>
 
-          <li> Deal moved to Negotiation</li>
+          <li>
+            Total Meetings: {dashboard?.total_meetings ?? 0}
+          </li>
 
-          <li> Meeting scheduled with ABC Technologies</li>
+          <li>
+            Completed Tasks: {dashboard?.completed_tasks ?? 0}
+          </li>
 
-          <li> Task completed by Team</li>
+          <li>
+            Pending Tasks: {dashboard?.pending_tasks ?? 0}
+          </li>
 
         </ul>
 
       </div>
 
     </div>
-    </div>
-      
-  )
-}
-export default Analytics
-    
+  );
+};
+
+export default Analytics;

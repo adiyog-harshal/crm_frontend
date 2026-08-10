@@ -3,6 +3,7 @@ import './Deals.css';
 import { IndianRupee, TrendingUp, Plus, Search, X, Mail, Phone, Building2, Calendar, FileText, Check, Download, Edit3, Trash2, MoreVertical, Briefcase, FileDown, CheckCircle, Clock, Printer, Eye, User } from "lucide-react";
 import Button from '../../components/ui/Button';
 import SearchInput from '../../components/ui/SearchInput';
+import api from '../../services/api';
 
 const STAGES = ["New", "Contacted", "Qualified", "Unqualified", "Negotiation", "Won"];
 
@@ -35,7 +36,8 @@ const INITIAL_DEALS = [
 ];
 
 const Deals = () => {
-  const [deals, setDeals] = useState(INITIAL_DEALS);
+  const [deals, setDeals] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDragStage, setActiveDragStage] = useState(null);
   
@@ -45,15 +47,31 @@ const Deals = () => {
   const [activeDropdownId, setActiveDropdownId] = useState(null);
 
   // Form States
-  const [dealForm, setDealForm] = useState({ title: "", company: "", contact: "", phone: "", email: "", value: "", stage: "New", probability: 20 });
+  const [dealForm, setDealForm] = useState({ title: "", value: "", stage: "New", probability: 20, lead: "", expected_close_date: "" });
   const [callForm, setCallForm] = useState({ date: "", time: "", agenda: "" });
   const [meetingForm, setMeetingForm] = useState({ date: "", time: "", location: "Zoom", purpose: "" });
   const [proposalText, setProposalText] = useState("");
 
   const dropdownRef = useRef(null);
 
+  const mapDeal = (deal, leadRecords) => {
+    const lead = leadRecords.find((item) => Number(item.id) === Number(deal.lead));
+    return { ...deal, title: deal.deal_name, value: Number(deal.amount), date: deal.expected_close_date,
+      probability: STAGE_PROBABILITIES[deal.stage] ?? 0, company: lead?.company || "No company",
+      contact: lead ? `${lead.first_name} ${lead.last_name}` : "No lead", phone: lead?.phone || "", email: lead?.email || "" };
+  };
+
+  const fetchDealData = async () => {
+    try {
+      const [dealResponse, leadResponse] = await Promise.all([api.get("deal/"), api.get("leads/")]);
+      setLeads(leadResponse.data);
+      setDeals(dealResponse.data.map((deal) => mapDeal(deal, leadResponse.data)));
+    } catch (error) { console.error(error); alert("Unable to load deals."); }
+  };
+
   // Click outside to close dropdowns
   useEffect(() => {
+    fetchDealData();
     const handleOutsideClick = (e) => {
       if (activeDropdownId !== null && dropdownRef.current) {
         if (!dropdownRef.current.contains(e.target) && !e.target.closest('.kebab-btn')) {
@@ -98,24 +116,29 @@ const Deals = () => {
     setActiveDragStage(null);
   };
 
-  const handleDrop = (e, targetStage) => {
+  const handleDrop = async (e, targetStage) => {
     e.preventDefault();
     setActiveDragStage(null);
     const dealId = Number(e.dataTransfer.getData("text/plain"));
     if (isNaN(dealId)) return;
 
-    setDeals(prevDeals =>
-      prevDeals.map(deal =>
-        deal.id === dealId
-          ? { ...deal, stage: targetStage, probability: STAGE_PROBABILITIES[targetStage] }
-          : deal
-      )
-    );
+    const deal = deals.find((item) => item.id === dealId);
+    if (!deal) return;
+    try {
+      await api.put(`deal/update/${dealId}/`, {
+        deal_name: deal.deal_name,
+        amount: deal.amount,
+        stage: targetStage,
+        expected_close_date: deal.expected_close_date,
+        lead: deal.lead,
+      });
+      await fetchDealData();
+    } catch (error) { console.error(error); alert("Unable to update deal stage."); }
   };
 
   // Add/Edit Handlers
   const openAddModal = () => {
-    setDealForm({ title: "", company: "", contact: "", phone: "", email: "", value: "", stage: "New", probability: 20 });
+    setDealForm({ title: "", value: "", stage: "New", probability: 20, lead: "", expected_close_date: "" });
     setActiveModal("add");
   };
 
@@ -123,55 +146,37 @@ const Deals = () => {
     setSelectedDeal(deal);
     setDealForm({
       title: deal.title,
-      company: deal.company,
-      contact: deal.contact,
-      phone: deal.phone || "",
-      email: deal.email || "",
       value: deal.value,
       stage: deal.stage,
-      probability: deal.probability
+      probability: deal.probability,
+      lead: String(deal.lead),
+      expected_close_date: deal.expected_close_date,
     });
     setActiveModal("edit");
     setActiveDropdownId(null);
   };
 
-  const handleDealFormSubmit = (e) => {
+  const handleDealFormSubmit = async (e) => {
     e.preventDefault();
-    if (!dealForm.title || !dealForm.company || !dealForm.value) return;
+    if (!dealForm.title || !dealForm.lead || !dealForm.value || !dealForm.expected_close_date) return;
 
     const val = Number(dealForm.value);
     if (isNaN(val)) return;
 
-    if (activeModal === "add") {
-      const newDeal = {
-        id: Date.now(),
-        title: dealForm.title,
-        company: dealForm.company,
-        contact: dealForm.contact || "Unknown",
-        phone: dealForm.phone || "",
-        email: dealForm.email || "",
-        value: val,
-        stage: dealForm.stage,
-        probability: dealForm.probability,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setDeals(prev => [newDeal, ...prev]);
-    } else if (activeModal === "edit" && selectedDeal) {
-      setDeals(prev =>
-        prev.map(d =>
-          d.id === selectedDeal.id
-            ? { ...d, ...dealForm, value: val }
-            : d
-        )
-      );
-    }
-    setActiveModal(null);
-    setSelectedDeal(null);
+    const payload = { deal_name: dealForm.title, amount: val, stage: dealForm.stage, expected_close_date: dealForm.expected_close_date, lead: Number(dealForm.lead) };
+    try {
+      if (activeModal === "add") await api.post("deal/add/", payload);
+      else if (selectedDeal) await api.put(`deal/update/${selectedDeal.id}/`, payload);
+      await fetchDealData();
+      setActiveModal(null);
+      setSelectedDeal(null);
+    } catch (error) { console.error(error); alert("Unable to save deal."); }
   };
 
-  const handleDeleteDeal = (dealId) => {
+  const handleDeleteDeal = async (dealId) => {
     if (window.confirm("Are you sure you want to delete this deal?")) {
-      setDeals(prev => prev.filter(d => d.id !== dealId));
+      try { await api.delete(`deal/delete/${dealId}/`); await fetchDealData(); }
+      catch (error) { console.error(error); alert("Unable to delete deal."); }
     }
     setActiveDropdownId(null);
   };
@@ -220,10 +225,23 @@ const Deals = () => {
     setActiveModal(null);
   };
 
-  const triggerMeetingBook = (e) => {
+  const triggerMeetingBook = async (e) => {
     e.preventDefault();
-    alert(`Success: Meeting booked on ${meetingForm.date} at ${meetingForm.time} via ${meetingForm.location}`);
-    setActiveModal(null);
+    try {
+      await api.post("meeting/add/", {
+        title: meetingForm.purpose || `Meeting for ${selectedDeal.title}`,
+        agenda: meetingForm.purpose,
+        meeting_date: meetingForm.date,
+        start_time: meetingForm.time,
+        meeting_type: meetingForm.location === "In Person" ? "Offline" : "Online",
+        address: meetingForm.location === "In Person" ? meetingForm.location : "",
+        deal: selectedDeal.id,
+        lead: selectedDeal.lead,
+        status: true,
+      });
+      alert("Meeting booked successfully.");
+      setActiveModal(null);
+    } catch (error) { console.error(error); alert("Unable to book meeting."); }
   };
 
   const triggerSendProposal = () => {
@@ -486,43 +504,19 @@ const Deals = () => {
 
               <div className="form-row">
                 <div className="form-group flex-1">
-                  <label>Company Name *</label>
+                  <label>Lead *</label>
+                  <select value={dealForm.lead} onChange={(e) => setDealForm({ ...dealForm, lead: e.target.value })} required>
+                    <option value="">Select lead</option>
+                    {leads.map((lead) => <option key={lead.id} value={lead.id}>{lead.first_name} {lead.last_name} — {lead.company}</option>)}
+                  </select>
+                </div>
+                <div className="form-group flex-1">
+                  <label>Expected Close Date *</label>
                   <input
-                    type="text"
-                    placeholder="e.g. Acme Corp"
-                    value={dealForm.company}
-                    onChange={(e) => setDealForm({ ...dealForm, company: e.target.value })}
+                    type="date"
+                    value={dealForm.expected_close_date}
+                    onChange={(e) => setDealForm({ ...dealForm, expected_close_date: e.target.value })}
                     required
-                  />
-                </div>
-                <div className="form-group flex-1">
-                  <label>Primary Contact</label>
-                  <input
-                    type="text"
-                    placeholder="Contact Person name"
-                    value={dealForm.contact}
-                    onChange={(e) => setDealForm({ ...dealForm, contact: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group flex-1">
-                  <label>Contact Phone</label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. +91 98765 43210"
-                    value={dealForm.phone}
-                    onChange={(e) => setDealForm({ ...dealForm, phone: e.target.value })}
-                  />
-                </div>
-                <div className="form-group flex-1">
-                  <label>Contact Email</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. contact@company.com"
-                    value={dealForm.email}
-                    onChange={(e) => setDealForm({ ...dealForm, email: e.target.value })}
                   />
                 </div>
               </div>

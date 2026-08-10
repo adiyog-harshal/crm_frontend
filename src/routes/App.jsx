@@ -13,6 +13,7 @@ import Accounts from '../pages/Accounts/Accounts'
 import Tasks from '../pages/Tasks/Tasks'
 import Meetings from '../pages/Meetings/Meetings'
 import Analytics from '../pages/Analytics/Analytics'
+import Companies from '../pages/Companies/Companies'
 
 // Layout for Dashboard sections
 const DashboardLayout = () => {
@@ -48,7 +49,7 @@ function App() {
         {/* Nested Dashboard Layout */}
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Dashboard />} />
-          <Route path="/leads" element={<Leads/>} />
+          <Route path="/Leads" element={<Leads/>} />
           <Route path="/reports" element={<Reports/>} />
           <Route path="/contacts" element={<Contacts/>} />
           <Route path="/deals" element={<Deals/>} />
@@ -56,6 +57,7 @@ function App() {
           <Route path="/tasks" element={<Tasks/>} />
           <Route path="/meetings" element={<Meetings/>} />
           <Route path="/analytics" element={<Analytics/>} />
+          <Route path="/companies" element={<Companies />} />
           <Route path="/help" element={<PagePlaceholder name="Help & Support" />} />
         </Route>
 

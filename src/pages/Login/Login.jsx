@@ -20,7 +20,7 @@ const Login = () => {
     const result = loginSchema.safeParse({ username, password });
     
     if (!result.success) {
-      const errMsg = result.error.errors[0].message;
+      const errMsg = result.error.issues?.[0]?.message || "Validation failed";
       setErrors({ form: errMsg });
       return;
     }
