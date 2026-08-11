@@ -13,6 +13,10 @@ import Accounts from '../pages/Accounts/Accounts'
 import Tasks from '../pages/Tasks/Tasks'
 import Meetings from '../pages/Meetings/Meetings'
 import Analytics from '../pages/Analytics/Analytics'
+import Country from "../pages/Masters/Country/Country";
+import State from "../pages/Masters/State/State";
+import City from "../pages/Masters/City/City";
+import Role from "../pages/Masters/Role/Role";
 
 // Layout for Dashboard sections
 const DashboardLayout = () => {
@@ -56,6 +60,10 @@ function App() {
           <Route path="/tasks" element={<Tasks/>} />
           <Route path="/meetings" element={<Meetings/>} />
           <Route path="/analytics" element={<Analytics/>} />
+          <Route path="/masters/country" element={<Country />} />
+          <Route path="/masters/state" element={<State />} />
+          <Route path="/masters/city" element={<City />}  />
+          <Route path="/masters/role"element={<Role />} />
           <Route path="/help" element={<PagePlaceholder name="Help & Support" />} />
         </Route>
 
