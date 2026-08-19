@@ -1,0 +1,104 @@
+.ui-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  outline: none;
+}
+
+/* Primary Navy Button */
+.ui-btn-primary {
+  background: #0f172a;
+  color: white;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.ui-btn-primary:hover {
+  background: #1e293b;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Success Green Button */
+.ui-btn-success {
+  background: #15943d;
+  color: white;
+  box-shadow: 0 4px 12px rgba(21, 148, 61, 0.2);
+}
+
+.ui-btn-success:hover {
+  background: #117831;
+  box-shadow: 0 6px 16px rgba(21, 148, 61, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Outline Print Button */
+.ui-btn-outline {
+  background: #ffffff;
+  border: 1.5px solid #0f172a;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.ui-btn-outline:hover {
+  background: #f8fafc;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Danger Red Button */
+.ui-btn-danger {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.ui-btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Click Active Scaling */
+.ui-btn:active {
+  transform: scale(0.98);
+}
+
+.ui-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ui-btn-text {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Tablet */
+@media(max-width : 768px ){
+.ui-btn{
+  padding:9px 16px;
+  font-size: 13px;
+}
+}
+
+/* Phone */
+@media(max-width : 480px){
+  .ui-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    gap: 6px;
+    border-radius: 8px;
+  
+  }
+}
+

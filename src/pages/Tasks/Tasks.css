@@ -1,0 +1,308 @@
+.tasks-page {
+  min-height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172033;
+  background: #f7f9fc;
+}
+
+.tasks-topbar {
+  margin-bottom: 20px;
+}
+
+.tasks-topbar h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
+}
+
+.topbar-row,
+.toolbar-icons,
+.action-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-row {
+  gap: 12px;
+}
+
+.top-search {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d4dbe7;
+  border-radius: 7px;
+  font: inherit;
+}
+
+.top-search:focus,
+.filter-search:focus,
+.tasks-page > form input:focus,
+.tasks-page > form select:focus {
+  outline: 2px solid #bfdbfe;
+  border-color: #2563eb;
+}
+
+.create-btn,
+.edit-btn,
+.delete-btn,
+.toolbar-icons button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.create-btn {
+  padding: 10px 16px;
+  color: #fff;
+  background: #2563eb;
+  white-space: nowrap;
+}
+
+.create-btn:hover,
+.edit-btn:hover {
+  background: #1d4ed8;
+}
+
+/* The create form is a dialog: it never takes up space in the page flow. */
+.tasks-page > form {
+  position: fixed;
+  z-index: 20;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 10px 12px;
+  width: min(440px, calc(100vw - 32px));
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid #e1e7f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.22);
+  transform: translate(-50%, -50%);
+}
+
+.tasks-page > form h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+  font-size: 21px;
+}
+
+.tasks-page > form label {
+  align-self: center;
+  font-weight: 600;
+}
+
+.tasks-page > form input,
+.tasks-page > form select {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.modal-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 9px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+}
+
+.save-btn {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.save-btn:hover { background: #1d4ed8; }
+
+.tasks-toolbar,
+.filter-panel,
+.table-section {
+  border: 1px solid #e1e7f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.tasks-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+}
+
+.toolbar-top {
+  min-width: 0;
+}
+
+.all-records-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.toolbar-icons {
+  gap: 12px;
+}
+
+.toolbar-icons button {
+  padding: 7px 12px;
+  border: 1px solid #d4dbe7;
+  background: #fff;
+  color: #334155;
+}
+
+.sort-toolbar {
+  margin: 0;
+  font-size: 14px;
+}
+
+.tasks-body {
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+}
+
+.filter-panel {
+  width: 210px;
+  flex: 0 0 210px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.filter-panel h4 {
+  margin: 0 0 12px;
+}
+
+.filter-search {
+  width: 100%;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid #d4dbe7;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.filter-heading {
+  margin: 16px 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.filter-panel ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filter-panel li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.table-section {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tasks-table th,
+.tasks-table td {
+  padding: 12px 14px;
+  overflow: hidden;
+  border-bottom: 1px solid #edf0f5;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tasks-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+}
+
+.tasks-table td {
+  font-size: 14px;
+}
+
+.tasks-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.empty-row {
+  padding: 32px 14px !important;
+  color: #94a3b8;
+  text-align: center !important;
+}
+
+.action-buttons {
+  gap: 8px;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 7px 10px;
+  color: #fff;
+}
+
+.edit-btn { background: #2563eb; }
+.delete-btn { background: #dc2626; }
+.delete-btn:hover { background: #b91c1c; }
+
+@media (max-width: 700px) {
+  .tasks-page { padding: 16px; }
+  .tasks-body { display: block; }
+  .filter-panel { display: none; }
+  .tasks-toolbar { margin-bottom: 12px; }
+  .tasks-table th,
+  .tasks-table td { padding: 10px 8px; font-size: 12px; }
+  .action-buttons { gap: 4px; }
+  .edit-btn,
+  .delete-btn { padding: 6px; font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .topbar-row { align-items: stretch; flex-direction: column; }
+  .create-btn { width: 100%; }
+  .tasks-page > form { grid-template-columns: 1fr; gap: 7px; padding: 18px; }
+  .tasks-page > form label { margin-top: 4px; }
+  .modal-actions { margin-top: 10px; }
+  .tasks-toolbar { padding: 10px 12px; }
+}

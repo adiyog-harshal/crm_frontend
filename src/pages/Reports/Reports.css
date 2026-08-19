@@ -1,0 +1,49 @@
+.report-page{
+    padding: 23px;
+}
+.report-page h2{
+    font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a2e;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.report-table thead{
+    background-color: rgba(255, 0, 0, 0.329);
+}
+.report-table th{
+    text-align: left;
+    padding : 14px 16px;
+    /* border: 5px solid green; */
+    font-size: 18px;
+    font-weight: 600;
+     border-bottom: 1px solid #eee;
+}
+.report-table td{
+    padding : 12px 13px;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+@media(max-width : 490px){
+    .report-table{
+        display: block;
+        overflow-x: auto;
+        white-space:inherit;
+    }
+    .report-table th, .report-table td{
+        padding : 8px 10px;
+        font-size: 12px;
+    }
+    .report-page h2{
+        font-size: 18px;
+    }
+}
+
