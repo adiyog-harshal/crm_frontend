@@ -358,7 +358,7 @@ const handleDealFormSubmit = (e) => {
         probability: Number(dealForm.probability),
 };
 
-      fetch('http://127.0.0.1:8000/api/deal/add/', {
+      fetch('https://crm-backend-39kt.onrender.com/api/deal/add/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -389,7 +389,7 @@ const handleDealFormSubmit = (e) => {
 
   const handleDeleteDeal = (dealId) => {
     if (window.confirm("Are you sure you want to delete this deal?")) {
-      fetch(`http://127.0.0.1:8000/api/deal/delete/${dealId}/`, {
+      fetch(`https://crm-backend-39kt.onrender.com/api/deal/delete/${dealId}/`, {
         method: 'DELETE',
       })
         .then(() => {

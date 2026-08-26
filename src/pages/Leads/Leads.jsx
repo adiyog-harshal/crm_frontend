@@ -60,7 +60,7 @@ const Leads = () => {
     setLoading(true);
 
     const response = await api.get(
-      "http://127.0.0.1:8000/api/lead/"
+      "https://crm-backend-39kt.onrender.com/api/lead/"
     );
 
     console.log("LEADS:", response.data);
@@ -85,7 +85,7 @@ const Leads = () => {
 
  const fetchCountries = async () => {
   try {
-    const response = await api.get("http://127.0.0.1:8000/api/countries/");
+    const response = await api.get("https://crm-backend-39kt.onrender.com/api/countries/");
     console.log("COUNTRIES:", response.data);
 
     const data = Array.isArray(response.data)
@@ -100,7 +100,7 @@ const Leads = () => {
 
 const fetchStates = async () => {
   try {
-    const response = await api.get("http://127.0.0.1:8000/api/states/");
+    const response = await api.get("https://crm-backend-39kt.onrender.com/api/states/");
     console.log("STATES:", response.data);
 
     const data = Array.isArray(response.data)
@@ -115,7 +115,7 @@ const fetchStates = async () => {
 
 const fetchCities = async () => {
   try {
-    const response = await api.get("http://127.0.0.1:8000/api/city/");
+    const response = await api.get("https://crm-backend-39kt.onrender.com/api/city/");
     console.log("CITIES:", response.data);
 
     const data = Array.isArray(response.data)
@@ -235,7 +235,7 @@ const fetchCities = async () => {
       // UPDATE
       if (isEditing) {
         response = await api.put(
-          `http://127.0.0.1:8000/api/lead/update/${editingId}/`,
+          `https://crm-backend-39kt.onrender.com/api/lead/update/${editingId}/`,
           payload
         );
 
@@ -250,7 +250,7 @@ const fetchCities = async () => {
       // ADD
       else {
         response = await api.post(
-         "http://127.0.0.1:8000/api/lead/add/",
+         "https://crm-backend-39kt.onrender.com/api/lead/add/",
           payload
         );
 
@@ -322,7 +322,7 @@ const fetchCities = async () => {
 
     try {
       await api.delete(
-         `http://127.0.0.1:8000/api/lead/delete/${id}/`
+         `https://crm-backend-39kt.onrender.com/api/lead/delete/${id}/`
       );
 
       alert("Lead Deleted Successfully");

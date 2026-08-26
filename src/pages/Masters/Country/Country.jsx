@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./Country.css";
 
-const API_URL = "http://127.0.0.1:8000/api/countries/";
-const ADD_URL = "http://127.0.0.1:8000/api/countries/add/";
+const API_URL = "https://crm-backend-39kt.onrender.com/api/countries/";
+const ADD_URL = "https://crm-backend-39kt.onrender.com/api/countries/add/";
 
 const Country = () => {
   const [countries, setCountries] = useState([]);

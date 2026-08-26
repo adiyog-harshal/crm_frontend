@@ -49,7 +49,7 @@ const Companies = () => {
 
     try {
       setLoading(true);
-      const response = await api.get( "http://127.0.0.1:8000/api/companies/");
+      const response = await api.get( "https://crm-backend-39kt.onrender.com/api/companies/");
       setCompanies(response.data);
       setFilteredCompanies(response.data);
     } catch (error) {
@@ -114,7 +114,7 @@ const Companies = () => {
         alert("Company Updated Successfully");
       } else {
         await api.post(
-          "http://127.0.0.1:8000/api/companies/add/",
+          "https://crm-backend-39kt.onrender.com/api/companies/add/",
           payload
         );
         alert("Company Created Successfully");

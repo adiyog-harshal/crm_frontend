@@ -28,7 +28,7 @@ const Meetings = () => {
   });
 
   const fetchMeetings = () => {
-    fetch('http://127.0.0.1:8000/api/meeting/')
+    fetch('https://crm-backend-39kt.onrender.com/api/meeting/')
       .then(res => res.json())
       .then(data => {
         const normalized = Array.isArray(data) ? data.map(normalizeMeeting) : [];
@@ -45,7 +45,7 @@ const Meetings = () => {
     e.preventDefault();
     if (!meetingForm.title || !meetingForm.meeting_date || !meetingForm.start_time) return;
 
-    fetch('http://127.0.0.1:8000/api/meeting/add/', {
+    fetch('https://crm-backend-39kt.onrender.com/api/meeting/add/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(meetingForm)
@@ -61,7 +61,7 @@ const Meetings = () => {
 
   const handleDeleteMeeting = (id) => {
     if (window.confirm("Are you sure you want to delete this meeting?")) {
-      fetch(`http://127.0.0.1:8000/api/meeting/delete/${id}/`, {
+      fetch(`https://crm-backend-39kt.onrender.com/api/meeting/delete/${id}/`, {
         method: 'DELETE',
       })
         .then(() => {

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./Role.css";
 
-const API_URL = "http://127.0.0.1:8000/api/role/";
-const ADD_URL = "http://127.0.0.1:8000/api/role/add/";
+const API_URL = "https://crm-backend-39kt.onrender.com/api/role/";
+const ADD_URL = "https://crm-backend-39kt.onrender.com/api/role/add/";
 
 const Role = () => {
     

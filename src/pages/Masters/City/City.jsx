@@ -42,7 +42,7 @@ const handleAddCity = async (e) => {
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/city/add/",
+      "https://crm-backend-39kt.onrender.com/api/city/add/",
       {
         method: "POST",
         headers: {
@@ -89,7 +89,7 @@ const handleAddCity = async (e) => {
 };
 
 useEffect(() => {
-  fetch("http://127.0.0.1:8000/api/states/")
+  fetch("https://crm-backend-39kt.onrender.com/api/states/")
     .then((response) => {
       if (!response.ok) {
         throw new Error("Failed to load states");

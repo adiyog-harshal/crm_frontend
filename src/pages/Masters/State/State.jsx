@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import "./State.css";
 
-const STATE_API = "http://127.0.0.1:8000/api/states/";
-const STATE_ADD_API = "http://127.0.0.1:8000/api/states/add/";
-const COUNTRY_API = "http://127.0.0.1:8000/api/countries/";
+const STATE_API = "https://crm-backend-39kt.onrender.com/api/states/";
+const STATE_ADD_API = "https://crm-backend-39kt.onrender.com/api/states/add/";
+const COUNTRY_API = "https://crm-backend-39kt.onrender.com/api/countries/";
 
 const State = () => {
   const [states, setStates] = useState([]);
