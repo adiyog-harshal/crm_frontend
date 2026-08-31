@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import "./State.css";
+import { Pencil, Trash2 } from "lucide-react";
+import api from "../../../services/api";
+
 
 const STATE_API = "https://crm-backend-39kt.onrender.com/api/states/";
 const STATE_ADD_API = "https://crm-backend-39kt.onrender.com/api/states/add/";
@@ -10,6 +13,9 @@ const State = () => {
   const [states, setStates] = useState([]);
   const [countries, setCountries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [editingId, setEditingId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [newState, setNewState] = useState({
     country: "",
@@ -67,6 +73,42 @@ const State = () => {
       console.error("Error loading countries:", error);
     }
   };
+
+  // state edit 
+  const handleEdit = (state) => {
+  setEditingId(state.id);
+
+  setNewState({
+    state_name: state.state_name || "",
+    country: state.country || "",
+    status: state.status,
+  });
+
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
+
+  // delete
+
+  const handleDelete = async (id) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this state?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api.delete(`states/${id}/delete/`);
+
+    alert("State deleted successfully!");
+
+    await fetchStates();
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+    alert("Failed to delete state.");
+  }
+};
 
   // ================================
   // LOAD DATA WHEN PAGE OPENS
@@ -263,6 +305,7 @@ const State = () => {
               <th>State Name</th>
               <th>State Code</th>
               <th>Status</th>
+              <th className="actions-column">Actions</th>
             </tr>
 
           </thead>
@@ -299,6 +342,30 @@ const State = () => {
                     {state.status
                       ? "Active"
                       : "Inactive"}
+                  </td>
+
+                  <td className="actions-column">
+                    <div className="master-actions">
+
+                      <button
+                        type="button"
+                        className="action-btn edit-btn"
+                        title="Edit State"
+                        onClick={() => handleEdit(state)}
+                      >
+                        <Pencil size={17} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="action-btn delete-btn"
+                        title="Delete State"
+                        onClick={() => handleDelete(state.id)}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+
+                    </div>
                   </td>
 
                 </tr>

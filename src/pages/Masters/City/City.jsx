@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./City.css";
+import { Pencil, Trash2 } from "lucide-react";
+import api from "../../../services/api";
 
 
 
@@ -17,6 +19,9 @@ const City = () => {
     const [states, setStates] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [editingId, setEditingId] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
     
 
 
@@ -88,6 +93,39 @@ const handleAddCity = async (e) => {
   }
 };
 
+const handleEdit = (city) => {
+  setEditingId(city.id);
+
+  setNewCity({
+    city_name: city.city_name || "",
+    state: city.state || "",
+    status: city.status,
+  });
+
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
+// delete
+const handleDelete = async (id) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this city?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api.delete(`city/${id}/delete/`);
+
+    alert("City deleted successfully!");
+
+    await fetchCities();
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+    alert("Failed to delete city.");
+  }
+};
+
 useEffect(() => {
   fetch("https://crm-backend-39kt.onrender.com/api/states/")
     .then((response) => {
@@ -138,6 +176,7 @@ return (
                 <th>City Name</th>
                 <th>City Code</th>
                 <th>Status</th>
+                <th className="actions-column">Actions</th>
             </tr>
           </thead>
 
@@ -148,6 +187,29 @@ return (
                 <td>{city.city_name}</td>
                 <td>{city.city_code}</td>
                 <td>{city.status ? "Active" : "Inactive"}</td>
+                <td className="actions-column">
+                  <div className="master-actions">
+
+                    <button
+                      type="button"
+                      className="action-btn edit-btn"
+                      title="Edit City"
+                      onClick={() => handleEdit(city)}
+                    >
+                      <Pencil size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      className="action-btn delete-btn"
+                      title="Delete City"
+                      onClick={() => handleDelete(city.id)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+
+                  </div>
+                </td>
                 </tr>
             ))}
           </tbody>

@@ -4,17 +4,35 @@ import './Contacts.css'
 import { Users, UserPlus, Trash2, Plus, Search, X, Mail, Phone, Building2, Download } from "lucide-react";
 import Button from '../../components/ui/Button'
 import SearchInput from '../../components/ui/SearchInput';
+import { useSearchParams } from "react-router-dom";
 
 
 
 
 
 const Contacts = () => {
+
+  const [searchParams] = useSearchParams();
   const [contacts, setContacts] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [companies, setCompanies] = useState([]);
+  useEffect(() => {
+  fetchCompanies();
+}, []);
+
+const fetchCompanies = async () => {
+  try {
+    const response = await api.get("companies/");
+    console.log("Companies API:", response.data);
+    setCompanies(response.data);
+  } catch (error) {
+    console.error("Error fetching companies:", error);
+  }
+};
 
   const [newContact, setNewContact] = useState({
   name: "",
@@ -23,6 +41,21 @@ const Contacts = () => {
   phone: "",
   status: true,
 });
+
+useEffect(() => {
+  const companyId = searchParams.get("company");
+
+  if (companyId && companies.length > 0) {
+    setNewContact(prev => ({
+      ...prev,
+      company: companyId
+    }));
+
+    setIsModalOpen(true);
+  }
+}, [searchParams, companies]);
+
+
 
   // =========================
   // GET CONTACTS
@@ -95,27 +128,27 @@ const handleAddContact = async (e) => {
   console.log("Sending data:", newContact);
 
   try {
-    const companiesResponse = await api.get("companies/");
+//     const companiesResponse = await api.get("companies/");
 
-const company = companiesResponse.data.find(
-  (c) =>
-    (c.company_name || "").trim().toLowerCase() ===
-    newContact.company.trim().toLowerCase()
-);
+// const company = companiesResponse.data.find(
+//   (c) =>
+//     (c.company_name || "").trim().toLowerCase() ===
+//     newContact.company.trim().toLowerCase()
+// );
 
-if (!company) {
-  alert("Company not found. Please enter an existing company name.");
-  return;
-}
+// if (!company) {
+//   alert("Company not found. Please enter an existing company name.");
+//   return;
+// }
 
-const contactData = {
-  ...newContact,
-  company: company.id,
-};
+// const contactData = {
+//   ...newContact,
+//   company: company.id,
+// };
 
 const response = await api.post(
   "contacts/add/",
-  contactData
+  newContact
 );
 
     console.log("Success:", response.data);
@@ -403,16 +436,32 @@ const response = await api.post(
                 required
               />
               </div>
+
+
               <div className="contacts-input-group">
                 <label>Company *</label>
-                <input
-                  type="text"
-                  placeholder="Enter company name"
+
+                <select
                   value={newContact.company}
-                  onChange={e => setNewContact(prev => ({ ...prev, company: e.target.value }))}
+                  onChange={e =>
+                    setNewContact(prev => ({
+                      ...prev,
+                      company: e.target.value
+                    }))
+                  }
                   required
-                />
+                >
+                  <option value="">Select Company</option>
+
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>
+                      {company.company_name}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+
               <div className="contacts-input-group">
                 <label>Email Address</label>
                 <input

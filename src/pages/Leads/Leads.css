@@ -557,3 +557,26 @@
     to { transform: translateY(0); opacity: 1; }
 }
 
+.lead-status-btn {
+  border: none;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lead-status-btn.active {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.lead-status-btn.inactive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.lead-status-btn:hover {
+  opacity: 0.8;
+}
+

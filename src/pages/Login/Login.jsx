@@ -14,25 +14,33 @@ const Login = () => {
   const { login } = useAuth();
 
   const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+
+  const [loading, setLoading] = useState(false);
   
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const result = await login(username, password);
+    setLoading(true);
 
-    console.log("LOGIN SUCCESS:", result);
+    try {
+      const result = await login(username, password);
 
-    if (result) {
-      navigate("/home");
-    }
+      console.log("LOGIN SUCCESS:", result);
+
+      if (result) {
+        navigate("/home");
+      }
   } catch (error) {
     console.error("LOGIN ERROR:", error);
     console.error("BACKEND ERROR:", error.response?.data);
+  
+  } finally {
+    setLoading(false);
   }
 };
   return (
@@ -73,7 +81,22 @@ const Login = () => {
           />
         </div>
 
-        <button type="submit">Login</button>
+        <button 
+          type="submit"
+          className="login-btn"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span className="loader"></span>
+              Logging in....
+            </>
+          ) : (
+            "Login"
+          )
+        }
+          
+        </button>
 
         <div className="forgot-password">
           <Link to="/forgot-password">Forgot Password?</Link>

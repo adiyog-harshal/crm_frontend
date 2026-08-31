@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Country.css";
+import { Pencil, Trash2 } from "lucide-react";
+import api from "../../../services/api";
 
 const API_URL = "https://crm-backend-39kt.onrender.com/api/countries/";
 const ADD_URL = "https://crm-backend-39kt.onrender.com/api/countries/add/";
@@ -8,11 +10,26 @@ const Country = () => {
   const [countries, setCountries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [editingId, setEditingId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
   const [newCountry, setNewCountry] = useState({
     country_name: "",
     country_code: "",
     status: true,
   });
+
+  const handleEdit = (country) => {
+  setEditingId(country.id);
+
+  setNewCountry({
+    country_name: country.country_name || "",
+    status: country.status,
+  });
+
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
 
   // GET countries from backend
   const fetchCountries = async () => {
@@ -31,6 +48,28 @@ const Country = () => {
       console.error("GET connection error:", error);
     }
   };
+  // delete
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this country?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`countries/${id}/delete/`);
+
+      alert("Country deleted successfully!");
+
+      await fetchCountries();
+
+    } catch (error) {
+      console.error("DELETE ERROR:", error);
+
+      alert("Failed to delete country.");
+    }
+  };
+    
 
   useEffect(() => {
     fetchCountries();
@@ -75,6 +114,16 @@ const Country = () => {
         return;
       }
 
+      const handleEdit = (country) => {
+        setEditingId(country.id);
+
+        setFormData({
+          country_name: country.country_name,
+        });
+
+        setIsEditing(true);
+        setShowModal(true);
+      };
       // Backend returns { message, data }
       setCountries((prev) => [...prev, result.data]);
 
@@ -127,6 +176,7 @@ const Country = () => {
               <th>Country Name</th>
               <th>Country Code</th>
               <th>Status</th>
+              <th className="actions-column">Actions</th>
             </tr>
           </thead>
 
@@ -144,6 +194,29 @@ const Country = () => {
                   <td>
                     {country.status ? "Active" : "Inactive"}
                   </td>
+
+                  <td className="actions-column">
+                  <div className="master-actions">
+
+                    <button
+                      type="button"
+                      className="action-btn edit-btn"
+                      onClick={() => handleEdit(country)}
+                    >
+                      <Pencil size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      className="action-btn delete-btn"
+                      title="Delete Country"
+                      onClick={() => handleDelete(country.id)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+
+                  </div>
+                </td>
 
                 </tr>
               ))
@@ -257,6 +330,7 @@ const Country = () => {
 
               </div>
 
+          
 
               {/* Buttons */}
               <div className="contacts-modal-actions">

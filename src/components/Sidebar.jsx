@@ -1,11 +1,24 @@
-import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, CreditCard, Settings2, HelpCircle, BarChart3, Target, ChartNoAxesColumn, Building2, CircleCheckBig, } from 'lucide-react'
-import './Sidebar.css'
+
+import React, { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  Settings2,
+  HelpCircle,
+  BarChart3,
+  Target,
+  ChartNoAxesColumn,
+  Building2,
+  CircleCheckBig,
+} from "lucide-react";
+
+import "./Sidebar.css";
 
 const Sidebar = () => {
 
-  const [mastersOpen, setMastersOpen] = useState(true);
+  const [openMasters, setOpenMasters] = useState(false);
 
   return (
     <aside className="sidebar">
@@ -68,61 +81,48 @@ const Sidebar = () => {
 
 
           <li className="masters-menu-item">
+            <div className="sidebar-menu-item">
+              <button
+                  className="sidebar-menu-button"
+                  onClick={() => setOpenMasters(!openMasters)}
+                >
+                  <div className="sidebar-menu-left">
+                    <Building2 size={20} />
+                    <span>Masters</span>
+                  </div>
 
-            <div
-              className="sidebar-item masters-title"
-              onClick={() => setMastersOpen(!mastersOpen)}
-            >
-              <Settings2 size={20} />
+                  <span className="masters-arrow">
+                    {openMasters ? "▼" : "▶"}
+                  </span>
+                </button>
 
-              <span>Masters</span>
+              {openMasters && (
+                <div className="masters-submenu">
 
-              <span className="masters-arrow">
-                {mastersOpen ? "⌄" : "›"}
-              </span>
+                  <NavLink to="/masters/country">
+                    Country
+                  </NavLink>
+
+                  <NavLink to="/masters/state">
+                    State
+                  </NavLink>
+
+                  <NavLink to="/masters/city">
+                    City
+                  </NavLink>
+
+                  <NavLink to="/masters/role">
+                    Role
+                  </NavLink>
+
+                </div>
+              )}
             </div>
 
-            {mastersOpen && (
-              <div className="masters-submenu">
+            
 
-                <NavLink
-                  to="/masters/country"
-                  className={({ isActive }) =>
-                    `masters-subitem ${isActive ? "active" : ""}`
-                  }
-                >
-                  Country
-                </NavLink>
-
-                <NavLink
-                  to="/masters/state"
-                  className={({ isActive }) =>
-                    `masters-subitem ${isActive ? "active" : ""}`
-                  }
-                >
-                  State
-                </NavLink>
-
-                <NavLink
-                  to="/masters/city"
-                  className={({ isActive }) =>
-                    `masters-subitem ${isActive ? "active" : ""}`
-                  }
-                >
-                  City
-                </NavLink>
-
-                <NavLink
-                  to="/masters/role"
-                  className={({ isActive }) =>
-                    `masters-subitem ${isActive ? "active" : ""}`
-                  }
-                >
-                  Role
-                </NavLink>
-
-              </div>
-            )}
+            
+                
 
           </li>
           

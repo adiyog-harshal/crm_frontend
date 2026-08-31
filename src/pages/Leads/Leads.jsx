@@ -309,6 +309,24 @@ const fetchCities = async () => {
     setIsModalOpen(true);
   };
 
+  const handleUpdateLeadStatus = async (id, currentStatus) => {
+  const lead = leads.find((item) => item.id === id);
+
+  if (!lead) return;
+
+  try {
+    await api.put(`lead/update/${id}/`, {
+      ...lead,
+      status: !Boolean(currentStatus),
+    });
+
+    await fetchLeads();
+
+  } catch (error) {
+    console.error("Status update failed:", error);
+  }
+};
+
   // ===============================
   // DELETE LEAD
   // ===============================
@@ -348,34 +366,9 @@ const fetchCities = async () => {
   // UPDATE STATUS
   // ===============================
 
-  const handleUpdateLeadStatus = async (
-    id,
-    status
-  ) => {
-    const lead = leads.find(
-      (item) => item.id === id
-    );
 
-    if (!lead) return;
 
-    try {
-      await api.put(
-        `lead/update/${id}/`,
-        {
-          ...lead,
-          status,
-        }
-      );
-
-      await fetchLeads();
-
-    } catch (error) {
-      console.error(
-        "STATUS UPDATE ERROR:",
-        error
-      );
-    }
-  };
+  
 
   // ===============================
   // FILTER
@@ -642,15 +635,22 @@ const fetchCities = async () => {
 
                       <td>
 
-                        {lead.status ? (
-                          <span className="status-active">
-                            Active
-                          </span>
-                        ) : (
-                          <span className="status-inactive">
-                            Inactive
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          className={`lead-status-btn ${
+                            Boolean(lead.status) ? "active" : "inactive"
+                          }`}
+                          onClick={() =>
+                            handleUpdateLeadStatus(
+                              lead.id,
+                              lead.status
+                            )
+                          }
+                        >
+                          {Boolean(lead.status)
+                            ? "Active"
+                            : "Inactive"}
+                        </button>
 
                       </td>
 

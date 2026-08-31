@@ -7,6 +7,7 @@ import api from '../../services/api';
 
 
 
+
 const STAGES = ["New", "Contacted", "Qualified", "Unqualified", "Negotiation", "Won"];
 
 const STAGE_PROBABILITIES = {
@@ -524,46 +525,47 @@ const handleDealFormSubmit = (e) => {
     <div className="deals-page-container">
       {/* Top Action Header */}
       <div className="deals-page-header">
-        <div>
-          <h2>Deals Pipeline</h2>
-          <p>Drag and drop deals between columns to update their stages</p>
-        </div>
-        <div className="header-actions">
-          <SearchInput
-            placeholder="Search deals, companies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="deals-search"
-          />
-          <Button
-            variant="success"
-            icon={<Download size={16} />}
-            onClick={handleExportCSV}
-            title="Export Excel (CSV)"
-            className="deals-export-btn"
-          >
-            Export CSV
-          </Button>
-          <Button
-            variant="outline"
-            icon={<Printer size={16} />}
-            onClick={handlePrintPDF}
-            title="Print/Export PDF"
-            className="deals-print-btn"
-          >
-            Print Board
-          </Button>
-          <Button
-            variant="primary"
-            icon={<Plus size={18} />}
-            onClick={openAddModal}
-            className="add-deal-btn"
-          >
-            Add Deal
-          </Button>
-        </div>
-      </div>
 
+  <div className="deals-title-section">
+    <h1>Deals</h1>
+
+    <p>
+      Track and manage your sales pipeline
+    </p>
+  </div>
+
+  <div className="deals-actions">
+
+    {/* Search Box */}
+    <div className="deals-search">
+      <Search size={18} />
+
+      <input
+        type="text"
+        placeholder="Search deals, companies..."
+      />
+    </div>
+
+    <button className="export-btn">
+      <Download size={18} />
+      Export CSV
+    </button>
+
+    <button className="print-btn">
+      Print Board
+    </button>
+
+    <button
+      type="button"
+      className="add-deal-btn"
+      onClick={() => setActiveModal("add")}
+    >
+      + Add Deal
+    </button>
+
+  </div>
+
+</div>
       {/* Stats Section */}
       <div className="deals-stats-grid">
         {stats.map((item, index) => (

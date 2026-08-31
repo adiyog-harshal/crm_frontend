@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from "react";
 import "./Companies.css";
 import api from "../../services/api";
+import {
+  Plus,
+  Search, 
+  Pencil,
+  UserPlus,
+  Trash2
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Companies = () => {
 
+  const navigate = useNavigate();
+
   const [companies, setCompanies] = useState([]);
+
   const [filteredCompanies, setFilteredCompanies] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -15,7 +26,49 @@ const Companies = () => {
 
   const [editingId, setEditingId] = useState(null);
 
+  const handleEditCompany = (company) => {
+  setIsEditing(true);
+  setEditingId(company.id);
+
+  setFormData({
+    company_name: company.company_name || "",
+    email: company.email || "",
+    phone: company.phone || "",
+  });
+
+  setShowModal(true);
+};
+
+const handleDeleteCompany = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this company?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    await api.delete(`companies/${id}/`);
+
+    alert("Company deleted successfully!");
+
+    await fetchCompanies();
+
+  } catch (error) {
+    console.error("Delete error:", error);
+
+    alert("Failed to delete company.");
+  }
+};
+
   const [search, setSearch] = useState("");
+  // =============================
+  // FUNCTIONS
+  // ==============================
+
+
+  const handleAddContact = (company) => {
+    navigate(`/contacts?company=${company.id}`);
+  };
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -406,7 +459,7 @@ const Companies = () => {
               <th>State</th>
               <th>Country</th>
               <th>Status</th>
-              <th>Action</th>
+              <th>Actions</th>
 
             </tr>
 
@@ -474,20 +527,36 @@ const Companies = () => {
 
                   <td>
 
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit(company)}
-                    >
-                      Edit
-                    </button>
+                    <div className="company-actions">
 
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDelete(company.id)}
-                    >
-                      Delete
-                    </button>
+                      {/* EDIT */}
+                      <button
+                        className="action-btn edit-btn"
+                        title="Edit Company"
+                        onClick={() => handleEditCompany(company)}
+                      >
+                        <Pencil size={17} />
+                      </button>
 
+                      {/* ADD CONTACT */}
+                      <button
+                        className="action-btn contact-btn"
+                        title="Add Contact"
+                        onClick={() => handleAddContact(company)}
+                      >
+                        <UserPlus size={17} />
+                      </button>
+
+                      {/* DELETE */}
+                      <button
+                        className="action-btn delete-btn"
+                        title="Delete Company"
+                        onClick={() => handleDeleteCompany(company.id)}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+
+                    </div>
                   </td>
 
                 </tr>

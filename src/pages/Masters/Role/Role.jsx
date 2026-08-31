@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Role.css";
+import { Pencil, Trash2 } from "lucide-react";
+import api from "../../../services/api";
 
 const API_URL = "https://crm-backend-39kt.onrender.com/api/role/";
 const ADD_URL = "https://crm-backend-39kt.onrender.com/api/role/add/";
@@ -10,11 +12,47 @@ const Role = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [editingId, setEditingId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
   const [newRole, setNewRole] = useState({
     role_name: "",
     role_code: "",
     status: true,
 });
+
+const handleEdit = (role) => {
+  setEditingId(role.id);
+
+  setNewRole({
+    role_name: role.role_name || "",
+    status: role.status,
+  });
+
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
+// delete
+const handleDelete = async (id) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this role?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api.delete(`role/${id}/delete/`);
+
+    alert("Role deleted successfully!");
+
+    await fetchRoles();
+
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+    alert("Failed to delete role.");
+  }
+};
+
 
 useEffect(() => {
   fetch(API_URL)
@@ -116,6 +154,7 @@ return (
             <th>Role Name</th>
             <th>Role Code</th>
             <th>Status</th>
+            <th className="actions-column">Actions</th>
           </tr>
         </thead>
 
@@ -127,6 +166,29 @@ return (
                 <td>{role.role_code}</td>
                 <td>
                   {role.status ? "Active" : "Inactive"}
+                </td>
+                <td className="actions-column">
+                  <div className="master-actions">
+
+                    <button
+                      type="button"
+                      className="action-btn edit-btn"
+                      title="Edit Role"
+                      onClick={() => handleEdit(role)}
+                    >
+                      <Pencil size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      className="action-btn delete-btn"
+                      title="Delete Role"
+                      onClick={() => handleDelete(role.id)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+
+                  </div>
                 </td>
               </tr>
             ))
