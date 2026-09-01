@@ -7,15 +7,7 @@ import api from "../../../services/api";
 
 const City = () => {
 
-    const [cities, setCities] = useState([
-        {
-    id: 1,
-    state: "Maharashtra",
-    city_name: "Nagpur",
-    city_code: "NGP",
-    status: true,
-  },
-    ]);
+    const [cities, setCities] = useState([]);
     const [states, setStates] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +25,22 @@ const [newCity, setNewCity] = useState({
   status: true,
 });
 
+const fetchCities = async () => {
+  try {
+    const response = await api.get("city/");
+
+    console.log("Cities response:", response.data);
+
+    setCities(response.data);
+  } catch (error) {
+    console.error("Error loading cities:", error);
+  }
+};
+
+useEffect(() => {
+  fetchCities();
+}, []);
+
 const handleAddCity = async (e) => {
   e.preventDefault();
 
@@ -46,36 +54,18 @@ const handleAddCity = async (e) => {
   }
 
   try {
-    const response = await fetch(
-      "https://crm-backend-39kt.onrender.com/api/city/add/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          state: Number(newCity.state),
-          city_name: newCity.city_name.trim(),
-          city_code: newCity.city_code.trim().toUpperCase(),
-          status: newCity.status,
-        }),
-      }
-    );
+    const response = await api.post("city/add/", {
+      state: Number(newCity.state),
+      city_name: newCity.city_name.trim(),
+      city_code: newCity.city_code.trim().toUpperCase(),
+      status: newCity.status,
+    });
 
-    const result = await response.json();
+    console.log("Backend response:", response.data);
 
-    console.log("Status:", response.status);
-    console.log("Backend response:", result);
+    // Reload cities from database
+    await fetchCities();
 
-    if (!response.ok) {
-      alert(JSON.stringify(result));
-      return;
-    }
-
-    // Add newly saved city to the table
-    setCities((prev) => [...prev, result.data]);
-
-    // Reset form
     setNewCity({
       state: "",
       city_name: "",
@@ -89,15 +79,26 @@ const handleAddCity = async (e) => {
 
   } catch (error) {
     console.error("Error adding city:", error);
-    alert("Cannot connect to backend");
+    console.error("Backend error:", error.response?.data);
+
+    alert(
+      error.response?.data
+        ? JSON.stringify(error.response.data)
+        : "Cannot connect to backend"
+    );
   }
 };
+
+
+
+
 
 const handleEdit = (city) => {
   setEditingId(city.id);
 
   setNewCity({
     city_name: city.city_name || "",
+    city_code: city.city_code || "",
     state: city.state || "",
     status: city.status,
   });
@@ -183,7 +184,10 @@ return (
           <tbody>
             {cities.map((city) => (
                 <tr key={city.id}>
-                <td>{city.state}</td>
+                <td>
+                  {states.find((state) => state.id === city.state)?.state_name || "Unknown"}
+
+                </td>
                 <td>{city.city_name}</td>
                 <td>{city.city_code}</td>
                 <td>{city.status ? "Active" : "Inactive"}</td>
@@ -222,7 +226,7 @@ return (
   <div className="contacts-modal-overlay">
     <div className="contacts-modal-card">
       <div className="contacts-modal-header">
-        <h3>Add City</h3>
+        <h3>{isEditing ? "Edit City" : "Add City"}</h3>
 
         <button
           className="contacts-close-btn"

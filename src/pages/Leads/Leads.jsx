@@ -38,6 +38,8 @@ const Leads = () => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
 
+  
+
   const [newLead, setNewLead] = useState({
     first_name: "",
     last_name: "",
@@ -49,7 +51,90 @@ const Leads = () => {
     country: "",
     state: "",
     city: "",
+    notes: "",
+    next_follow_up: "",
   });
+
+  
+
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  const [followUp, setFollowUp] = useState({
+    follow_up_date: "",
+    follow_up_time: "",
+    follow_up_type: "Phone Call",
+    notes: "",
+  });
+
+
+
+
+
+
+  // NEW FOLLOW-UP HANDLER
+  const handleFollowUpChange = (e) => {
+      const { name, value } = e.target;
+
+      setFollowUp((prev) => ({
+          ...prev,
+          [name]: value,
+      }));
+  };
+
+  const saveFollowUp = async () => {
+    if (!selectedLead) {
+        alert("Please select a lead first.");
+        return;
+    }
+
+    if (!followUp.follow_up_date) {
+        alert("Please select follow-up date.");
+        return;
+    }
+
+    if (!followUp.follow_up_time) {
+        alert("Please select follow-up time.");
+        return;
+    }
+
+    try {
+        const response = await axios.post("/lead/followups/", {
+            lead: selectedLead.id,
+            follow_up_date: followUp.follow_up_date,
+            follow_up_time: followUp.follow_up_time,
+            follow_up_type: followUp.follow_up_type,
+            notes: followUp.notes,
+            status: "Pending",
+        });
+
+        setFollowUps((prev) => [...prev, response.data]);
+
+        setFollowUp({
+            follow_up_date: "",
+            follow_up_time: "",
+            follow_up_type: "Phone Call",
+            notes: "",
+        });
+
+        alert("Follow-up saved successfully!");
+    } catch (error) {
+        console.error("Follow-up save error:", error);
+        alert("Failed to save follow-up.");
+    }
+  };
+
+  const loadFollowUps = async (leadId) => {
+    try {
+        const response = await axios.get(
+            `/lead/followups/?lead=${leadId}`
+        );
+
+        setFollowUps(response.data);
+    } catch (error) {
+        console.error("Error loading follow-ups:", error);
+    }
+  };
+
 
   // ===============================
   // FETCH LEADS
@@ -98,20 +183,35 @@ const Leads = () => {
   }
 };
 
-const fetchStates = async () => {
-  try {
-    const response = await api.get("https://crm-backend-39kt.onrender.com/api/states/");
-    console.log("STATES:", response.data);
+  const fetchStates = async () => {
+      try {
+          const response = await fetch(
+              "https://crm-backend-39kt.onrender.com/api/states/"
+          );
 
-    const data = Array.isArray(response.data)
-      ? response.data
-      : response.data.results || response.data.data || [];
+          if (!response.ok) {
+              throw new Error("Failed to load states");
+          }
 
-    setStates(data);
-  } catch (error) {
-    console.error("STATE FETCH ERROR:", error.response?.data || error);
-  }
-};
+          const data = await response.json();
+
+          console.log("STATES:", data);
+
+          setStates(data);
+      } catch (error) {
+          console.error("Error fetching states:", error);
+      }
+  };
+
+useEffect(() => {
+
+    fetchLeads();
+    fetchCountries();
+    fetchStates();
+    fetchCities();
+
+  }, []);
+
 
 const fetchCities = async () => {
   try {
@@ -132,12 +232,7 @@ const fetchCities = async () => {
   // INITIAL LOAD
   // ===============================
 
-  useEffect(() => {
-    fetchLeads();
-    fetchCountries();
-    fetchStates();
-    fetchCities();
-  }, []);
+  
 
   // ===============================
   // HANDLE INPUT
@@ -187,6 +282,8 @@ const fetchCities = async () => {
       country: "",
       state: "",
       city: "",
+      notes: "",
+      next_follow_up: "",
     });
 
     setEditingId(null);
@@ -226,6 +323,9 @@ const fetchCities = async () => {
         country: Number(newLead.country),
         state: Number(newLead.state),
         city: Number(newLead.city),
+
+        notes: newLead.notes || "",
+        next_follow_up: newLead.next_follow_up || null,
       };
 
       console.log("FINAL LEAD PAYLOAD:", payload);
@@ -291,6 +391,10 @@ const fetchCities = async () => {
   // ===============================
 
   const handleEditLead = (lead) => {
+
+    setSelectedLead(lead);
+    loadFollowUps(lead.id);
+    
     setNewLead({
       first_name: lead.first_name || "",
       last_name: lead.last_name || "",
@@ -302,6 +406,8 @@ const fetchCities = async () => {
       country: lead.country || "",
       state: lead.state || "",
       city: lead.city || "",
+      notes: lead.notes || "",
+      next_follow_up: lead.next_follow_up || "",
     });
 
     setEditingId(lead.id);
@@ -486,16 +592,17 @@ const fetchCities = async () => {
               Export CSV
             </Button>
 
-            <Button
-              variant="primary"
-              icon={<Plus size={16} />}
-              onClick={() => {
-                resetForm();
-                setIsModalOpen(true);
-              }}
-              className="leads-add-btn"
+            <Button 
+              variant="primary" 
+              icon={<Plus size={16} />} 
+              onClick={() => { 
+                resetForm(); 
+            
+                setIsModalOpen(true); 
+              }} 
+              className="leads-add-btn" 
             >
-              Add Lead
+              Add Lead 
             </Button>
 
           </div>
@@ -881,30 +988,25 @@ const fetchCities = async () => {
   <label>State *</label>
 
   <select
-    name="state"
-    value={newLead.state}
-    onChange={handleChange}
-    required
-    disabled={!newLead.country}
+      name="state"
+      value={newLead.state}
+      onChange={handleChange}
+      required
+      disabled={!newLead.country}
   >
-    <option value="">
-      {newLead.country
-        ? "Select State"
-        : "Select Country First"}
-    </option>
+      <option value="">
+          {newLead.country
+              ? "Select State"
+              : "Select Country First"}
+      </option>
 
-    {states
-      .filter(
-        (state) =>
-          Number(state.country) ===
-          Number(newLead.country) &&
-          state.status
-      )
-      .map((state) => (
-        <option key={state.id} value={state.id}>
-          {state.state_name}
-        </option>
-      ))}
+      {states
+          .filter((state) => state.status)
+          .map((state) => (
+              <option key={state.id} value={state.id}>
+                  {state.state_name}
+              </option>
+          ))}
   </select>
 </div>
 
@@ -939,6 +1041,31 @@ const fetchCities = async () => {
       ))}
   </select>
 </div>
+
+
+
+              <div className="leads-input-group">
+                  <label>Comments / Notes</label>
+
+                  <textarea
+                      name="notes"
+                      value={newLead.notes}
+                      onChange={handleChange}
+                      placeholder="Enter notes or next action..."
+                      rows="3"
+                  />
+              </div>
+
+              <div className="leads-input-group">
+                  <label>Next Follow-up</label>
+
+                  <input
+                      type="datetime-local"
+                      name="next_follow_up"
+                      value={newLead.next_follow_up}
+                      onChange={handleChange}
+                  />
+              </div>
 
 
 
@@ -984,7 +1111,7 @@ const fetchCities = async () => {
                   className="leads-btn-cancel"
                   onClick={() => {
                     resetForm();
-                    setIsModalOpen(false);
+                    setIsModalOpen(true);
                   }}
                 >
                   Cancel
@@ -1001,7 +1128,17 @@ const fetchCities = async () => {
 
               </div>
 
+              {/* Follow-up Section */}
+              
+
+              
+
+
+
             </form>
+
+
+
 
           </div>
 
