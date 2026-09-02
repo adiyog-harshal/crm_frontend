@@ -8,6 +8,9 @@ const ADD_URL = "https://crm-backend-39kt.onrender.com/api/countries/add/";
 
 const Country = () => {
   const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [editingId, setEditingId] = useState(null);
@@ -31,23 +34,42 @@ const Country = () => {
   setIsModalOpen(true);
 };
 
+
   // GET countries from backend
+//   const fetchCountries = async () => {
+//   try {
+//     setLoading(true);
+
+//     const response = await fetch(API_URL);
+//     const data = await response.json();
+
+//     console.log("Countries:", data);
+
+//     if (response.ok) {
+//       setCountries(data);
+//     } else {
+//       console.error("GET error:", data);
+//     }
+//   } catch (error) {
+//     console.error("GET connection error:", error);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
   const fetchCountries = async () => {
     try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-
-      console.log("Countries:", data);
-
-      if (response.ok) {
-        setCountries(data);
-      } else {
-        console.error("GET error:", data);
-      }
+      const response = await api.get("countries/");
+      console.log("COUNTRIES RESPONSE:", response.data);
+      setCountries(response.data);
     } catch (error) {
-      console.error("GET connection error:", error);
+      console.error("FETCH COUNTRIES ERROR:", error);
     }
   };
+
+
+
+
   // delete
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
@@ -182,7 +204,13 @@ const Country = () => {
 
           <tbody>
 
-            {countries.length > 0 ? (
+            {loading ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: "center", padding: "30px" }}>
+                    Loading...
+                  </td>
+                </tr>
+              ) : countries.length > 0 ? (
 
               countries.map((country) => (
                 <tr key={country.id}>

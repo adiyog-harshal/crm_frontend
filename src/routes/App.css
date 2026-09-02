@@ -59,4 +59,8 @@
   color: #64748b;
   font-size: 14px;
 }
+.app {
+  min-height: 100vh;
+  width: 100%;
+}
 

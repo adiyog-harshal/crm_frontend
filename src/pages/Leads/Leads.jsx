@@ -38,6 +38,8 @@ const Leads = () => {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
 
+  const [followUps, setFollowUps] = useState([]);
+
   
 
   const [newLead, setNewLead] = useState({
@@ -65,6 +67,8 @@ const Leads = () => {
     follow_up_type: "Phone Call",
     notes: "",
   });
+
+
 
 
 
@@ -1129,6 +1133,48 @@ const fetchCities = async () => {
               </div>
 
               {/* Follow-up Section */}
+
+              <div className="dashboard-card followups-card">
+              <div className="dashboard-card-header">
+                <h3>Today's Follow-ups</h3>
+              </div>
+
+              {followUps.length === 0 ? (
+                <p className="no-followups">
+                  No follow-ups for today.
+                </p>
+              ) : (
+                <div className="followups-list">
+
+                  {followUps.map((lead) => (
+                    <div
+                      className="followup-row"
+                      key={lead.id}
+                    >
+                      <div className="followup-lead">
+                        <strong>
+                          {lead.first_name} {lead.last_name}
+                        </strong>
+                      </div>
+
+                      <div className="followup-time">
+                        {new Date(
+                          lead.next_follow_up
+                        ).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+
+                      <div className="followup-notes">
+                        {lead.notes || "No notes"}
+                      </div>
+                    </div>
+                  ))}
+
+                </div>
+              )}
+            </div>
               
 
               

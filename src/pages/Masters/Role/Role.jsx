@@ -8,7 +8,8 @@ const ADD_URL = "https://crm-backend-39kt.onrender.com/api/role/add/";
 
 const Role = () => {
     
-  const [roles, setRoles] = useState([])
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,6 +56,8 @@ const handleDelete = async (id) => {
 
 
 useEffect(() => {
+  setLoading(true);
+
   fetch(API_URL)
     .then((response) => {
       if (!response.ok) {
@@ -69,8 +72,13 @@ useEffect(() => {
     })
     .catch((error) => {
       console.error("Error loading roles:", error);
+    })
+    .finally(() => {
+      setLoading(false);
     });
 }, []);
+
+
 
 const handleAddRole = async (e) => {
   e.preventDefault();
@@ -159,7 +167,13 @@ return (
         </thead>
 
         <tbody>
-          {roles.length > 0 ? (
+          {loading ? (
+            <tr>
+              <td colSpan="4" style={{ textAlign: "center", padding: "30px" }}>
+                Loading...
+              </td>
+            </tr>
+          ) : roles.length > 0 ? (
             roles.map((role) => (
               <tr key={role.id}>
                 <td>{role.role_name}</td>
@@ -194,12 +208,14 @@ return (
             ))
           ) : (
             <tr>
-              <td colSpan="3" className="contacts-empty-state">
+              <td colSpan="4" className="contacts-empty-state">
                 No roles found.
               </td>
             </tr>
           )}
         </tbody>
+
+
       </table>
     </div>
 

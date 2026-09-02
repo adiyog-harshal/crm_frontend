@@ -11,6 +11,7 @@ const COUNTRY_API = "https://crm-backend-39kt.onrender.com/api/countries/";
 
 const State = () => {
   const [states, setStates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -28,26 +29,33 @@ const State = () => {
   // LOAD STATES
   // ================================
   const loadStates = async () => {
-    try {
-      const response = await fetch(STATE_API);
+  try {
+    setLoading(true);
 
-      const text = await response.text();
+    const response = await fetch(STATE_API);
 
-      console.log("STATE GET STATUS:", response.status);
-      console.log("STATE GET RESPONSE:", text);
+    const text = await response.text();
 
-      if (!response.ok) {
-        console.error("Unable to load states");
-        return;
-      }
+    console.log("STATE GET STATUS:", response.status);
+    console.log("STATE GET RESPONSE:", text);
 
-      const data = JSON.parse(text);
-
-      setStates(data);
-    } catch (error) {
-      console.error("Error loading states:", error);
+    if (!response.ok) {
+      console.error("Unable to load states");
+      return;
     }
-  };
+
+    const data = JSON.parse(text);
+
+    setStates(data);
+  } catch (error) {
+    console.error("Error loading states:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   // ================================
   // LOAD COUNTRIES
@@ -102,7 +110,7 @@ const State = () => {
 
     alert("State deleted successfully!");
 
-    await fetchStates();
+    await loadStates();
 
   } catch (error) {
     console.error("DELETE ERROR:", error);
@@ -312,7 +320,13 @@ const State = () => {
 
           <tbody>
 
-            {states.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="4" style={{ textAlign: "center", padding: "30px" }}>
+                  Loading...
+                </td>
+              </tr>
+            ) : states.length > 0 ? (
 
               <tr>
                 <td colSpan="4">

@@ -580,3 +580,32 @@
   opacity: 0.8;
 }
 
+.followups-card {
+  margin-top: 20px;
+}
+
+.followups-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.followup-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 2fr;
+  gap: 20px;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.followup-time {
+  font-weight: 600;
+}
+
+.followup-notes {
+  color: #666;
+}
+
+.no-followups {
+  padding: 20px 0;
+  color: #777;
+}

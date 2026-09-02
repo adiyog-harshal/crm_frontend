@@ -247,80 +247,82 @@ const handleAddDeal = async (e) => {
 
 
   const handleDrop = async (e, targetStage) => {
-  e.preventDefault();
-  setActiveDragStage(null);
+    e.preventDefault();
+    setActiveDragStage(null);
 
-  const dealId = Number(e.dataTransfer.getData("text/plain"));
-  if (isNaN(dealId)) return;
+    const dealId = Number(e.dataTransfer.getData("text/plain"));
 
-  const oldDeal = deals.find((deal) => deal.id === dealId);
+    if (isNaN(dealId)) return;
 
-  if (!oldDeal) return;
+    const oldDeal = deals.find((deal) => deal.id === dealId);
 
-  // Update frontend immediately
-  setDeals((prevDeals) =>
-    prevDeals.map((deal) =>
-      deal.id === dealId
-        ? {
-            ...deal,
-            stage: targetStage,
-            probability: STAGE_PROBABILITIES[targetStage],
-          }
-        : deal
-    )
-  );
+    if (!oldDeal) return;
 
-  try {
-    const payload = {
-      deal_name: oldDeal.deal_name || oldDeal.title,
-      lead: Number(oldDeal.lead),
-      amount: Number(oldDeal.amount || oldDeal.value),
-      stage: targetStage,
-      expected_close_date: oldDeal.expected_close_date || oldDeal.date,
-      probability: Number(STAGE_PROBABILITIES[targetStage]),
-    };
-
-    console.log("DEAL STAGE UPDATE PAYLOAD:", payload);
-
-    console.error(
-      "DEAL STAGE UPDATE ERROR:",
-      error.response?.status,
-      error.response?.data
+    // Update UI immediately
+    setDeals((prevDeals) =>
+      prevDeals.map((deal) =>
+        deal.id === dealId
+          ? {
+              ...deal,
+              stage: targetStage,
+              probability: STAGE_PROBABILITIES[targetStage],
+            }
+          : deal
+      )
     );
 
-    const response = await api.put(
-      `deal/update/${dealId}/`,
-      payload
-    );
+    try {
+      const payload = {
+        deal_name: oldDeal.deal_name || oldDeal.title,
+        lead: Number(oldDeal.lead),
+        amount: Number(oldDeal.amount || oldDeal.value),
+        stage: targetStage,
+        expected_close_date:
+          oldDeal.expected_close_date || oldDeal.date,
+        probability: Number(STAGE_PROBABILITIES[targetStage]),
+      };
 
-    console.log("DEAL STAGE UPDATED:", response.data);
+      console.log("DEAL STAGE UPDATE PAYLOAD:", payload);
 
-  } catch (error) {
-  console.error("DEAL STAGE UPDATE ERROR:", error);
+      const response = await api.put(
+        `deal/update/${dealId}/`,
+        payload
+      );
 
-  if (error.response) {
-    console.error("STATUS:", error.response.status);
-    console.error("BACKEND ERROR:", error.response.data);
-  } else {
-    console.error("NO RESPONSE FROM BACKEND:", error.message);
-  }
-}
-};
+      console.log("DEAL STAGE UPDATED:", response.data);
 
+    } catch (error) {
+      console.error("DEAL STAGE UPDATE ERROR:", error);
 
+      if (error.response) {
+        console.error("STATUS:", error.response.status);
+        console.error("BACKEND ERROR:", error.response.data);
 
-  // Add/Edit Handlers
-  const openAddModal = () => {
-    setDealForm({
-    title: "",
-    lead: "",
-    expected_close_date: "",
-    value: "",
-    stage: STAGES[0],
-    probability: STAGE_PROBABILITIES[STAGES[0]],
-  });
-    setActiveModal("add");
+        // If backend update fails, reload original data
+        await fetchDealData();
+      } else {
+        console.error("NO RESPONSE FROM BACKEND:", error.message);
+      }
+    }
   };
+
+
+
+
+
+
+    // Add/Edit Handlers
+    const openAddModal = () => {
+      setDealForm({
+      title: "",
+      lead: "",
+      expected_close_date: "",
+      value: "",
+      stage: STAGES[0],
+      probability: STAGE_PROBABILITIES[STAGES[0]],
+    });
+      setActiveModal("add");
+    };
 
 
 

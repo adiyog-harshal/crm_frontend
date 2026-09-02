@@ -26,6 +26,10 @@ const Companies = () => {
 
   const [editingId, setEditingId] = useState(null);
 
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+
   const handleEditCompany = (company) => {
   setIsEditing(true);
   setEditingId(company.id);
@@ -36,7 +40,19 @@ const Companies = () => {
     phone: company.phone || "",
   });
 
+  
+
   setShowModal(true);
+};
+
+const fetchCountries = async () => {
+  try {
+    const response = await api.get("countries/");
+    console.log("COUNTRIES RESPONSE:", response.data);
+    setCountries(response.data);
+  } catch (error) {
+    console.error("FETCH COUNTRIES ERROR:", error);
+  }
 };
 
 const handleDeleteCompany = async (id) => {
@@ -84,9 +100,42 @@ const handleDeleteCompany = async (id) => {
     gst_number: "",
     status: true,
   });
+// useState
+
+
+const fetchStates = async (countryId) => {
+  if (!countryId) {
+    setStates([]);
+    return;
+  }
+
+  try {
+    const response = await api.get(`states/?country=${countryId}`);
+    setStates(response.data);
+  } catch (error) {
+    console.error("FETCH STATES ERROR:", error);
+  }
+};
+
+const fetchCities = async (stateId) => {
+  if (!stateId) {
+    setCities([]);
+    return;
+  }
+
+  try {
+    const response = await api.get(`city/?state=${stateId}`);
+    console.log("CITIES RESPONSE:", response.data);
+    setCities(response.data);
+  } catch (error) {
+    console.error("FETCH CITIES ERROR:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchCompanies();
+    fetchCountries();
   }, []);
 
   useEffect(() => {
@@ -119,15 +168,45 @@ const handleDeleteCompany = async (id) => {
       setLoading(false);
     }
   };
-  const handleChange = (e) => {
 
-    const { name, value, checked, type } = e.target;
+  // handlechange
+  const handleChange = async (e) => {
+  const { name, value, checked, type } = e.target;
 
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+  setFormData((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+
+  if (name === "country") {
+    setStates([]);
+    setCities([]);
+
+    setFormData((prev) => ({
+      ...prev,
+      country: value,
+      state: "",
+      city: "",
+    }));
+
+    await fetchStates(value);
+  }
+
+  if (name === "state") {
+    setCities([]);
+
+    setFormData((prev) => ({
+      ...prev,
+      state: value,
+      city: "",
+    }));
+
+    await fetchCities(value);
+  }
+};
+
+
+
 
   const resetForm = () => {
     setFormData({
@@ -334,38 +413,66 @@ const handleDeleteCompany = async (id) => {
                   />
                 </div>
 
+                
+              
+
                 <div className="form-group">
-                  <label>City</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
+                  <label>Country</label>
+
+                  <select
+                    name="country"
+                    value={formData.country}
                     onChange={handleChange}
-                    required
-                  />
+                  >
+                    <option value="">Select Country</option>
+
+                    {countries.map((country) => (
+                      <option key={country.id} value={country.id}>
+                        {country.country_name}
+                      </option>
+                    ))}
+                  </select>                  
+
+
+
                 </div>
 
                 <div className="form-group">
                   <label>State</label>
-                  <input
-                    type="text"
+                  <select
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
-                    required
-                  />
+                    disabled={!formData.country}
+                  >
+                    <option value="">Select State</option>
+
+                    {states.map((state) => (
+                      <option key={state.id} value={state.id}>
+                        {state.state_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="form-group">
-                  <label>Country</label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
+                  <label>City</label>
+                  <select
+                    name="city"
+                    value={formData.city}
                     onChange={handleChange}
-                    required
-                  />
+                    disabled={!formData.state}
+                  >
+                    <option value="">Select City</option>
+
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {city.city_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
 
                 <div className="form-group">
                   <label>GST Number</label>

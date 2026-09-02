@@ -8,6 +8,8 @@ import api from "../../../services/api";
 const City = () => {
 
     const [cities, setCities] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const [states, setStates] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +29,8 @@ const [newCity, setNewCity] = useState({
 
 const fetchCities = async () => {
   try {
+    setLoading(true);
+
     const response = await api.get("city/");
 
     console.log("Cities response:", response.data);
@@ -34,8 +38,12 @@ const fetchCities = async () => {
     setCities(response.data);
   } catch (error) {
     console.error("Error loading cities:", error);
+  } finally {
+    setLoading(false);
   }
 };
+
+
 
 useEffect(() => {
   fetchCities();
@@ -182,43 +190,51 @@ return (
           </thead>
 
           <tbody>
-            {cities.map((city) => (
-                <tr key={city.id}>
-                <td>
-                  {states.find((state) => state.id === city.state)?.state_name || "Unknown"}
-
-                </td>
-                <td>{city.city_name}</td>
-                <td>{city.city_code}</td>
-                <td>{city.status ? "Active" : "Inactive"}</td>
-                <td className="actions-column">
-                  <div className="master-actions">
-
-                    <button
-                      type="button"
-                      className="action-btn edit-btn"
-                      title="Edit City"
-                      onClick={() => handleEdit(city)}
-                    >
-                      <Pencil size={17} />
-                    </button>
-
-                    <button
-                      type="button"
-                      className="action-btn delete-btn"
-                      title="Delete City"
-                      onClick={() => handleDelete(city.id)}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-
-                  </div>
-                </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "30px" }}>
+                    Loading...
+                  </td>
                 </tr>
-            ))}
-          </tbody>
+              ) : (
+                cities.map((city) => (
+                  <tr key={city.id}>
+                    <td>
+                      {states.find((state) => state.id === city.state)?.state_name || "Unknown"}
+                    </td>
 
-            
+                    <td>{city.city_name}</td>
+                    <td>{city.city_code}</td>
+                    <td>{city.status ? "Active" : "Inactive"}</td>
+
+                    <td className="actions-column">
+                      <div className="master-actions">
+
+                        <button
+                          type="button"
+                          className="action-btn edit-btn"
+                          title="Edit City"
+                          onClick={() => handleEdit(city)}
+                        >
+                          <Pencil size={17} />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn delete-btn"
+                          title="Delete City"
+                          onClick={() => handleDelete(city.id)}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+                        
           
         </table>
 
