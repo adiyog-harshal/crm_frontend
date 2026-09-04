@@ -15,9 +15,15 @@ const Contacts = () => {
   const [searchParams] = useSearchParams();
   const [contacts, setContacts] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const contactsPerPage = 2;
 
   const [companies, setCompanies] = useState([]);
   useEffect(() => {
@@ -66,23 +72,41 @@ useEffect(() => {
 
 const fetchContacts = async () => {
   try {
+    setLoading(true);
+
     const response = await api.get("contacts/");
     setContacts(response.data);
+
   } catch (error) {
-    console.error("GET error:", error);
+    console.error("FETCH CONTACTS ERROR:", error);
+  } finally {
+    setLoading(false);
   }
 };
   // =========================
   // DYNAMIC STATISTICS
   // =========================
+  
+  
+  
+  
+  console.log("CONTACTS DATA:", contacts);
+  console.log(
+    "CONTACT STATUSES:",
+    contacts.map((c) => ({
+      name: c.name,
+      status: c.status,
+      type: typeof c.status,
+    }))
+  );
   const totalContacts = contacts.length;
 
   const activeContacts = contacts.filter(
-    (c) => c.status === "Active"
+    (c) => Boolean(c.status) === true
   ).length;
 
   const inactiveContacts = contacts.filter(
-    (c) => c.status === "Inactive"
+    (c) => Boolean(c.status) === false
   ).length;
 
   const uniqueCompanies = new Set(
@@ -118,6 +142,15 @@ const fetchContacts = async () => {
       color: "#1e293b",
     },
   ];
+
+// ADD
+  console.log("TOTAL:", totalContacts);
+  console.log("ACTIVE:", activeContacts);
+  console.log("INACTIVE:", inactiveContacts);
+  console.log("COMPUTED STATS:", computedStats);
+
+
+
 
   // =========================
   // ADD CONTACT - POST API
@@ -188,7 +221,12 @@ const response = await api.post(
   // =========================
   // UPDATE CONTACT STATUS
   // =========================
-  const handleUpdateContactStatus = (id, newStatus) => {
+  const handleUpdateContactStatus = async (id, newStatus) => {
+  try {
+    await api.put(`contacts/update/${id}/`, {
+      status: newStatus,
+    });
+
     setContacts((prev) =>
       prev.map((contact) =>
         contact.id === id
@@ -196,16 +234,36 @@ const response = await api.post(
           : contact
       )
     );
-  };
+
+  } catch (error) {
+    console.error("STATUS UPDATE ERROR:", error);
+    alert("Failed to update contact status.");
+  }
+};
 
   // =========================
   // DELETE CONTACT
   // =========================
-  const handleDeleteContact = (id) => {
+  const handleDeleteContact = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this contact?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await api.delete(`contacts/delete/${id}/`);
+
     setContacts((prev) =>
       prev.filter((contact) => contact.id !== id)
     );
-  };
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+    alert("Failed to delete contact.");
+  }
+};
 
   // =========================
   // EXPORT CSV
@@ -275,10 +333,39 @@ const response = await api.post(
 
     const matchesStatus =
       statusFilter === "All" ||
-      contact.status === statusFilter;
+      (statusFilter === "Active" && contact.status === true) ||
+      (statusFilter === "Inactive" && contact.status === false);
 
     return matchesSearch && matchesStatus;
   });
+
+  // =========================
+  // PAGINATION
+  // =========================
+    const totalPages = Math.ceil(
+      filteredContacts.length / contactsPerPage
+    );
+
+    const indexOfLastContact = currentPage * contactsPerPage;
+    const indexOfFirstContact =
+      indexOfLastContact - contactsPerPage;
+
+    const currentContacts = filteredContacts.slice(
+      indexOfFirstContact,
+      indexOfLastContact
+    );
+
+    useEffect(() => {
+      setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
+
+    console.log("Filtered Contacts:", filteredContacts.length);
+    console.log("Total Pages:", totalPages);
+    console.log("Current Page:", currentPage);
+    console.log("Current Contacts:", currentContacts.length);
+
+
+  
   return (
     <>
       <div className="contacts-container">
@@ -362,8 +449,14 @@ const response = await api.post(
               </tr>
             </thead>
             <tbody>
-              {filteredContacts.length > 0 ? (
-                filteredContacts.map(contact => (
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="contacts-empty-state">
+                    Loading...
+                  </td>
+                </tr>
+              ) : filteredContacts.length > 0 ? (
+                currentContacts.map(contact => (
                   <tr key={contact.id}>
                     <td className="contact-name-cell">
                       {contact.name ||
@@ -380,19 +473,29 @@ const response = await api.post(
                     <td>
                       <span className="info-badge">
                         <Phone size={12} />
-                        {contact.phone}
+                        <span>{contact.mobile}</span>
                       </span>
                     </td>
                     <td>
+                      
+
                       <select
-                        className={`contacts-status-select ${contact.status ? "active" : "inactive"}`}
-                        value={contact.status}
-                        onChange={e => handleUpdateContactStatus(contact.id, e.target.value)}
+                        className={`contacts-status-select ${
+                          contact.status === true ? "active" : "inactive"
+                        }`}
+                        value={contact.status === true ? "Active" : "Inactive"}
+                        onChange={(e) =>
+                          handleUpdateContactStatus(
+                            contact.id,
+                            e.target.value === "Active"
+                          )
+                        }
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                       </select>
                     </td>
+
                     <td>
                       <button className="contacts-delete-btn" onClick={() => handleDeleteContact(contact.id)} title="Delete Contact">
                         <Trash2 size={16} />
@@ -407,8 +510,56 @@ const response = await api.post(
               )}
             </tbody>
           </table>
-        </div>
+
+           {/* Pagination */}
+        {filteredContacts.length > 0 && (
+          <div className="contacts-pagination">
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.max(prev - 1, 1))
+              }
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1
+            ).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={currentPage === page ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, totalPages)
+                )
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+
+          </div>
+        )}
+
       </div>
+
+    </div>
+
+          
+
+        
+            
+      
 
       {/* Add Contact Modal */}
       {isModalOpen && (
@@ -476,16 +627,26 @@ const response = await api.post(
 
                 <input
                   type="tel"
-                  placeholder="Enter phone number"
-                  value={newContact.phone || ""}
-                  onChange={(e) =>
-                    setNewContact((prev) => ({
-                      ...prev,
-                      phone: e.target.value,
-                    }))
-                  }
+                  name="phone"
+                  value={newContact.phone}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+
+                    if (value.length <= 10) {
+                      setNewContact((prev) => ({
+                        ...prev,
+                        phone: value,
+                      }));
+                    }
+                  }}
+                  placeholder="Enter 10 digit phone number"
+                  maxLength={10}
                   required
+                  pattern="[0-9]{10}"
+                  title="Phone number must contain exactly 10 digits"
                 />
+
+
               </div>
               <div className="contacts-input-group">
                 <label>Status</label>

@@ -154,6 +154,9 @@
 /* =========================
    MODAL
 ========================= */
+/* =========================
+   MODAL
+========================= */
 
 .modal-overlay {
   position: fixed;
@@ -212,7 +215,6 @@
   gap: 10px;
   flex-wrap: wrap;
 }
-
 /* =========================
    TABLET
 ========================= */
@@ -286,6 +288,7 @@
 
   .modal {
     max-height: calc(100vh - 20px);
+  
   }
 
   .modal-buttons {
@@ -311,4 +314,8 @@
   min-width: 1200px !important;
   max-width: none !important;
   border-collapse: collapse;
+}
+.required {
+  color: red;
+  margin-left: 2px;
 }

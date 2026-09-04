@@ -319,25 +319,18 @@ const State = () => {
           </thead>
 
           <tbody>
-
             {loading ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center", padding: "30px" }}>
+                <td
+                  colSpan="5"
+                  style={{ textAlign: "center", padding: "30px" }}
+                >
                   Loading...
                 </td>
               </tr>
             ) : states.length > 0 ? (
 
-              <tr>
-                <td colSpan="4">
-                  No states found
-                </td>
-              </tr>
-
-            ) : (
-
               states.map((state) => (
-
                 <tr key={state.id}>
 
                   <td>
@@ -353,9 +346,7 @@ const State = () => {
                   </td>
 
                   <td>
-                    {state.status
-                      ? "Active"
-                      : "Inactive"}
+                    {state.status ? "Active" : "Inactive"}
                   </td>
 
                   <td className="actions-column">
@@ -383,12 +374,22 @@ const State = () => {
                   </td>
 
                 </tr>
-
               ))
 
-            )}
+            ) : (
 
+              <tr>
+                <td
+                  colSpan="5"
+                  style={{ textAlign: "center", padding: "30px" }}
+                >
+                  No states found
+                </td>
+              </tr>
+
+            )}
           </tbody>
+
 
         </table>
 

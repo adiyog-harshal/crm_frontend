@@ -593,3 +593,38 @@
         padding: 16px;
     }
 }
+
+.contacts-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.contacts-pagination button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.contacts-pagination button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.contacts-pagination button.active {
+  background: #1e293b;
+  color: white;
+  border-color: #1e293b;
+}
+
+.contacts-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -200,7 +200,7 @@ return (
                 cities.map((city) => (
                   <tr key={city.id}>
                     <td>
-                      {states.find((state) => state.id === city.state)?.state_name || "Unknown"}
+                      {city.state_name || "Unknown"}
                     </td>
 
                     <td>{city.city_name}</td>

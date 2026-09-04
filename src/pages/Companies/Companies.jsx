@@ -18,6 +18,9 @@ const Companies = () => {
 
   const [filteredCompanies, setFilteredCompanies] = useState([]);
 
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -63,7 +66,7 @@ const handleDeleteCompany = async (id) => {
   if (!confirmDelete) return;
 
   try {
-    await api.delete(`companies/${id}/`);
+    await api.delete(`companies/delete/${id}/`);
 
     alert("Company deleted successfully!");
 
@@ -103,6 +106,8 @@ const handleDeleteCompany = async (id) => {
 // useState
 
 
+
+
 const fetchStates = async (countryId) => {
   if (!countryId) {
     setStates([]);
@@ -111,6 +116,7 @@ const fetchStates = async (countryId) => {
 
   try {
     const response = await api.get(`states/?country=${countryId}`);
+    console.log("STATES RESPONSE:", response.data);
     setStates(response.data);
   } catch (error) {
     console.error("FETCH STATES ERROR:", error);
@@ -131,22 +137,43 @@ const fetchCities = async (stateId) => {
     console.error("FETCH CITIES ERROR:", error);
   }
 };
-
-
   useEffect(() => {
     fetchCompanies();
     fetchCountries();
   }, []);
 
   useEffect(() => {
+  let filtered = companies.filter((item) =>
+    item.company_name
+      ?.toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
-    const filtered = companies.filter((item) =>
-      item.company_name
-        .toLowerCase()
-        .includes(search.toLowerCase())
+  // Filter by Status
+  if (filterStatus === "active") {
+    filtered = filtered.filter((item) => item.status === true);
+  }
+
+  if (filterStatus === "inactive") {
+    filtered = filtered.filter((item) => item.status === false);
+  }
+
+  // Sort by Company Name
+  if (sortOrder === "az") {
+    filtered.sort((a, b) =>
+      (a.company_name || "").localeCompare(b.company_name || "")
     );
-    setFilteredCompanies(filtered);
-  }, [companies, search]);
+  }
+
+  if (sortOrder === "za") {
+    filtered.sort((a, b) =>
+      (b.company_name || "").localeCompare(a.company_name || "")
+    );
+  }
+
+  setFilteredCompanies(filtered);
+}, [companies, search, filterStatus, sortOrder]);  
+  
   const fetchCompanies = async () => {
 
     try {
@@ -173,11 +200,7 @@ const fetchCities = async (stateId) => {
   const handleChange = async (e) => {
   const { name, value, checked, type } = e.target;
 
-  setFormData((prev) => ({
-    ...prev,
-    [name]: type === "checkbox" ? checked : value,
-  }));
-
+  // COUNTRY
   if (name === "country") {
     setStates([]);
     setCities([]);
@@ -189,9 +212,19 @@ const fetchCities = async (stateId) => {
       city: "",
     }));
 
-    await fetchStates(value);
+    // Find country ID from country name
+    const selectedCountry = countries.find(
+      (country) => country.country_name === value
+    );
+
+    if (selectedCountry) {
+      await fetchStates(selectedCountry.id);
+    }
+
+    return;
   }
 
+  // STATE
   if (name === "state") {
     setCities([]);
 
@@ -201,11 +234,24 @@ const fetchCities = async (stateId) => {
       city: "",
     }));
 
-    await fetchCities(value);
+    // Find state ID from state name
+    const selectedState = states.find(
+      (state) => state.state_name === value
+    );
+
+    if (selectedState) {
+      await fetchCities(selectedState.id);
+    }
+
+    return;
   }
+
+  // OTHER FIELDS
+  setFormData((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
 };
-
-
 
 
   const resetForm = () => {
@@ -256,9 +302,33 @@ const fetchCities = async (stateId) => {
       setShowModal(false);
       fetchCompanies();
     } catch (error) {
-        console.error("COMPANY SAVE ERROR:", error.response?.data);
-        alert(JSON.stringify(error.response?.data));
-}
+    console.error("COMPANY SAVE ERROR:", error.response?.data);
+
+    const errors = error.response?.data;
+
+    if (errors && typeof errors === "object") {
+      const errorMessages = Object.entries(errors)
+        .map(([field, messages]) => {
+          const fieldName = field
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+
+          const message = Array.isArray(messages)
+            ? messages.join(", ")
+            : messages;
+
+          return `${fieldName}: ${message}`;
+        })
+        .join("\n");
+
+      alert(
+        "Please correct the following errors:\n\n" +
+        errorMessages
+      );
+    } else {
+      alert("Unable to save company. Please check the entered details.");
+    }
+    }
   };
   const handleEdit = (company) => {
 
@@ -349,7 +419,7 @@ const fetchCities = async (stateId) => {
               <div className="form-grid">
 
                 <div className="form-group">
-                  <label>Company Name</label>
+                  <label>Company Name <span className="required">*</span></label>
                   <input
                     type="text"
                     name="company_name"
@@ -360,7 +430,7 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="form-group">
-                  <label>Company Code</label>
+                  <label>Company Code <span className="required">*</span></label>
                   <input
                     type="text"
                     name="company_code"
@@ -371,7 +441,7 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>Email <span className="required">*</span></label>
                   <input
                     type="email"
                     name="email"
@@ -382,19 +452,34 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="form-group">
-                  <label>Phone</label>
+                  <label>
+                    Phone <span className="required">*</span>
+                  </label>
                   <input
-                    type="text"
+                    type="tel"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
-                    maxLength={15}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+
+
+
+                      if (value.length <= 10) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: value,
+                        }));
+                      }
+                    }}
+                    placeholder="Enter 10 digit phone number"
+                    maxLength={10}
                     required
+                    pattern="[0-9]{10}"
+                    title="Phone number must contain exactly 10 digits"
                   />
                 </div>
-
                 <div className="form-group">
-                  <label>Website</label>
+                  <label>Website <span className="required">*</span></label>
                   <input
                     type="text"
                     name="website"
@@ -404,7 +489,7 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="form-group">
-                  <label>Postal Code</label>
+                  <label>Postal Code <span className="required">*</span></label>
                   <input
                     type="text"
                     name="postal_code"
@@ -417,65 +502,83 @@ const fetchCities = async (stateId) => {
               
 
                 <div className="form-group">
-                  <label>Country</label>
+                  <label>
+                    Country <span className="required">*</span>
+                  </label>
 
                   <select
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
+                    required
                   >
                     <option value="">Select Country</option>
 
                     {countries.map((country) => (
-                      <option key={country.id} value={country.id}>
+                      <option
+                        key={country.id}
+                        value={country.country_name}
+                      >
                         {country.country_name}
                       </option>
                     ))}
-                  </select>                  
-
-
-
+                  </select>
                 </div>
 
+
                 <div className="form-group">
-                  <label>State</label>
+                  <label>
+                    State <span className="required">*</span>
+                  </label>
+
                   <select
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
                     disabled={!formData.country}
+                    required
                   >
                     <option value="">Select State</option>
 
                     {states.map((state) => (
-                      <option key={state.id} value={state.id}>
+                      <option
+                        key={state.id}
+                        value={state.state_name}
+                      >
                         {state.state_name}
                       </option>
                     ))}
                   </select>
                 </div>
 
+
                 <div className="form-group">
-                  <label>City</label>
+                  <label>
+                    City <span className="required">*</span>
+                  </label>
+
                   <select
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
                     disabled={!formData.state}
+                    required
                   >
                     <option value="">Select City</option>
 
                     {cities.map((city) => (
-                      <option key={city.id} value={city.id}>
+                      <option
+                        key={city.id}
+                        value={city.city_name}
+                      >
                         {city.city_name}
                       </option>
                     ))}
                   </select>
                 </div>
 
-
                 <div className="form-group">
-                  <label>GST Number</label>
+                  <label>GST Number <span className="required">*</span></label>
                   <input
                     type="text"
                     name="gst_number"
@@ -485,7 +588,7 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="form-group full-width">
-                  <label>Address</label>
+                  <label>Address <span className="required">*</span></label>
                   <textarea
                     name="address"
                     value={formData.address}
@@ -494,7 +597,7 @@ const fetchCities = async (stateId) => {
                 </div>
 
                 <div className="status-row">
-                  <label>Status</label>
+                  <label>Status </label>
 
                   <input
                     type="checkbox"
@@ -544,10 +647,31 @@ const fetchCities = async (stateId) => {
         </div>
 
         <div className="toolbar-icons">
-          <button>Filter</button>
-          <button>Sort</button>
-        </div>
 
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+      
+            <option value="all">
+              Filter
+            </option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value =""> 
+              Sort
+            </option>
+            <option value="az">Name A-Z</option>
+            <option value="za">Name Z-A</option>
+          </select>
+
+        </div>
       </div>
 
       <div className="table-section">

@@ -58,14 +58,21 @@ const Country = () => {
 // };
 
   const fetchCountries = async () => {
-    try {
-      const response = await api.get("countries/");
-      console.log("COUNTRIES RESPONSE:", response.data);
-      setCountries(response.data);
-    } catch (error) {
-      console.error("FETCH COUNTRIES ERROR:", error);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const response = await api.get("countries/");
+
+    console.log("COUNTRIES RESPONSE:", response.data);
+
+    setCountries(response.data);
+
+  } catch (error) {
+    console.error("FETCH COUNTRIES ERROR:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -136,16 +143,7 @@ const Country = () => {
         return;
       }
 
-      const handleEdit = (country) => {
-        setEditingId(country.id);
-
-        setFormData({
-          country_name: country.country_name,
-        });
-
-        setIsEditing(true);
-        setShowModal(true);
-      };
+    
       // Backend returns { message, data }
       setCountries((prev) => [...prev, result.data]);
 
@@ -252,7 +250,7 @@ const Country = () => {
             ) : (
 
               <tr>
-                <td colSpan="3">
+                <td colSpan="4">
                   No countries found
                 </td>
               </tr>
